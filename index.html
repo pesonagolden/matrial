@@ -31,10 +31,14 @@
   select option{background:#191d2b;color:var(--fg)}
   .foto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px}
   .info-edit{font-size:10px; color:var(--green); margin-top:2px;}
-  
-  /* CSS Tambahan untuk Tanda Sudah Upload */
   .upload-status{display:none; color:var(--green); font-size:10px; margin-top:4px; font-weight:600; align-items:center; gap:4px}
   .upload-status.active{display:flex}
+  
+  /* CSS Tambahan untuk Galeri Thumbnail di Form */
+  .existing-gallery-wrap{background:rgba(255,255,255,.02); border:1px dashed var(--border); border-radius:8px; padding:12px; margin-bottom:15px; display:none;}
+  .existing-gallery-wrap.active{display:block}
+  .gallery-thumb{width:50px; height:50px; object-fit:cover; border-radius:6px; cursor:pointer; border:2px solid var(--border); transition:.2s}
+  .gallery-thumb:hover{transform:scale(1.1); border-color:var(--green); box-shadow:0 2px 10px rgba(0,0,0,.5)}
   
   .foto-cell{display:flex;flex-direction:column;align-items:center;gap:4px}
   .drive-link{color:var(--blue);font-size:10px;text-decoration:none;display:flex;align-items:center;gap:3px}
@@ -100,14 +104,28 @@
       
       <div style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px">
         <label style="font-size:14px; color:var(--accent)"><i class="fas fa-camera"></i> Foto Pengambilan</label>
+        
+        <!-- GALERI THUMBNAIL FOTO PENGAMBILAN SUDAH ADA -->
+        <div id="existingAmbilWrap" class="existing-gallery-wrap">
+          <label style="font-size:10px; margin-bottom:8px; display:block; color:var(--green)"><i class="fas fa-check-circle"></i> Foto lama sudah ada (Klik untuk lihat):</label>
+          <div id="existingAmbilGallery" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+        </div>
+
         <input type="file" id="fotoPengambilan" accept="image/*" onchange="previewImg(this, 'prevPengambilan', 'statusPengambilan')">
         <img id="prevPengambilan" class="thumb" referrerpolicy="no-referrer" style="margin-top:5px; display:none">
-        <!-- PENANDA STATUS UPLOAD -->
         <div id="statusPengambilan" class="upload-status"><i class="fas fa-check-circle"></i> Sudah upload (Tidak perlu upload ulang)</div>
       </div>
 
       <div style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px">
         <label style="font-size:14px; color:var(--green)"><i class="fas fa-images"></i> Foto Pemakaian Barang (1-21)</label>
+        
+        <!-- GALERI THUMBNAIL FOTO PEMAKAIAN SUDAH ADA -->
+        <div id="existingPakaiWrap" class="existing-gallery-wrap">
+          <label style="font-size:10px; margin-bottom:8px; display:block; color:var(--green)"><i class="fas fa-check-circle"></i> Foto lama sudah ada (Klik thumbnail untuk lihat):</label>
+          <div id="existingPakaiGallery" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+        </div>
+
+        <div class="info-edit">* Kosongkan jika tidak ingin mengubah foto lama</div>
         <div class="foto-grid" id="pemakaianFotoGrid"></div>
       </div>
 
@@ -155,7 +173,6 @@
       <label style="font-size:9px">Foto ${i}</label>
       <input type="file" id="fotoPakai${i}" accept="image/*" onchange="previewImg(this, 'prevPakai${i}', 'statusPakai${i}')">
       <img id="prevPakai${i}" class="thumb" referrerpolicy="no-referrer" style="display:none; width:100%; height:80px; margin-top:5px">
-      <!-- PENANDA STATUS UPLOAD PEMAKAIAN -->
       <div id="statusPakai${i}" class="upload-status"><i class="fas fa-check-circle"></i> Sudah upload</div>
     `;
     fotoGrid.appendChild(div);
@@ -175,9 +192,11 @@
     document.getElementById('materialForm').reset();
     document.getElementById('rowNum').value = "";
     document.querySelectorAll('.thumb').forEach(el => el.style.display = 'none');
-    
-    // Sembunyikan semua tanda status saat buat laporan baru
     document.querySelectorAll('.upload-status').forEach(el => el.classList.remove('active'));
+    
+    // Sembunyikan galeri existing saat buat baru
+    document.getElementById('existingAmbilWrap').classList.remove('active');
+    document.getElementById('existingPakaiWrap').classList.remove('active');
     
     document.getElementById('formTitle').innerText = "Form Laporan Baru";
     document.getElementById('submitBtn').innerHTML = '<i class="fas fa-paper-plane"></i> Simpan Laporan';
@@ -185,7 +204,6 @@
     form.style.display = form.style.display === 'none' ? 'block' : 'none';
   }
 
-  // Ditambah parameter statusId untuk menghilangkan tanda jika user pilih foto baru
   function previewImg(input, previewId, statusId) {
     if (input.files && input.files[0]) {
       const reader = new FileReader();
@@ -193,7 +211,6 @@
         const prev = document.getElementById(previewId);
         prev.src = e.target.result;
         prev.style.display = 'block';
-        // Hilangkan tanda "Sudah upload" karena user ingin mengganti foto
         if(statusId) document.getElementById(statusId).classList.remove('active');
       }
       reader.readAsDataURL(input.files[0]);
@@ -256,32 +273,55 @@
     document.getElementById('banyakNya').value = row.banyakNya;
     document.getElementById('peruntukan').value = row.peruntukan;
 
-    const prevAmbil = document.getElementById('prevPengambilan');
-    const statusAmbil = document.getElementById('statusPengambilan');
+    // --- PROSES GALERI THUMBNAIL PENGAMBILAN ---
+    const ambilWrap = document.getElementById('existingAmbilWrap');
+    const ambilGallery = document.getElementById('existingAmbilGallery');
+    ambilGallery.innerHTML = ''; // Kosongkan dulu
+    document.getElementById('prevPengambilan').style.display = 'none'; // Sembunyikan preview file
+    
     if(row.fotoPengambilan) { 
-      prevAmbil.src = row.fotoPengambilan; 
-      prevAmbil.style.display = 'block'; 
-      statusAmbil.classList.add('active'); // TAMPILKAN TANDA SUDAH UPLOAD
+      ambilWrap.classList.add('active');
+      const driveUrl = getDriveUrl(row.fotoPengambilan);
+      const img = document.createElement('img');
+      img.src = row.fotoPengambilan;
+      img.className = 'gallery-thumb';
+      img.referrerpolicy = 'no-referrer';
+      img.onclick = () => openModal(img.src, driveUrl);
+      ambilGallery.appendChild(img);
     } else { 
-      prevAmbil.style.display = 'none'; 
-      statusAmbil.classList.remove('active'); 
+      ambilWrap.classList.remove('active'); 
     }
 
+    // --- PROSES GALERI THUMBNAIL PEMAKAIAN ---
+    const pakaiWrap = document.getElementById('existingPakaiWrap');
+    const pakaiGallery = document.getElementById('existingPakaiGallery');
+    pakaiGallery.innerHTML = ''; // Kosongkan dulu
+    
+    let hasExistingPakai = false;
     for(let i=1; i<=21; i++){
-      const prevPakai = document.getElementById(`prevPakai${i}`);
-      const statusPakai = document.getElementById(`statusPakai${i}`);
       const url = row.fotoPemakaian ? row.fotoPemakaian[i-1] : null;
+      const prevPakai = document.getElementById(`prevPakai${i}`);
+      
+      // Sembunyikan preview di masing-masing slot agar form tidak panjang
+      prevPakai.style.display = 'none';
+      document.getElementById(`statusPakai${i}`).classList.remove('active');
+
       if(url) { 
-        prevPakai.src = url; 
-        prevPakai.style.display = 'block';
-        statusPakai.classList.add('active'); // TAMPILKAN TANDA SUDAH UPLOAD
-      } else { 
-        prevPakai.style.display = 'none'; 
-        statusPakai.classList.remove('active');
+        hasExistingPakai = true;
+        const driveUrl = getDriveUrl(url);
+        const img = document.createElement('img');
+        img.src = url;
+        img.className = 'gallery-thumb';
+        img.referrerpolicy = 'no-referrer';
+        img.onclick = () => openModal(img.src, driveUrl);
+        pakaiGallery.appendChild(img);
       }
     }
+    
+    if(hasExistingPakai) pakaiWrap.classList.add('active');
+    else pakaiWrap.classList.remove('active');
 
-    // Reset input file
+    // Reset input file agar tidak ikut terkirim
     document.getElementById('fotoPengambilan').value = '';
     for(let i=1; i<=21; i++) document.getElementById(`fotoPakai${i}`).value = '';
     
@@ -323,7 +363,9 @@
         alert(payload.rowNum ? 'Laporan berhasil diupdate!' : 'Laporan berhasil disimpan!');
         document.getElementById('materialForm').reset();
         document.querySelectorAll('.thumb').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.upload-status').forEach(el => el.classList.remove('active')); // Sembunyikan tanda
+        document.querySelectorAll('.upload-status').forEach(el => el.classList.remove('active'));
+        document.getElementById('existingAmbilWrap').classList.remove('active');
+        document.getElementById('existingPakaiWrap').classList.remove('active');
         document.getElementById('formSection').style.display = 'none';
         loadData();
       } else { throw new Error(result.message || 'Gagal menyimpan ke server'); }
