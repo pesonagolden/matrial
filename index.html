@@ -31,6 +31,11 @@
   select option{background:#191d2b;color:var(--fg)}
   .foto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px}
   .info-edit{font-size:10px; color:var(--green); margin-top:2px;}
+  
+  /* CSS Tambahan untuk Tanda Sudah Upload */
+  .upload-status{display:none; color:var(--green); font-size:10px; margin-top:4px; font-weight:600; align-items:center; gap:4px}
+  .upload-status.active{display:flex}
+  
   .foto-cell{display:flex;flex-direction:column;align-items:center;gap:4px}
   .drive-link{color:var(--blue);font-size:10px;text-decoration:none;display:flex;align-items:center;gap:3px}
   .drive-link:hover{color:#60a5fa; text-decoration:underline}
@@ -95,15 +100,14 @@
       
       <div style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px">
         <label style="font-size:14px; color:var(--accent)"><i class="fas fa-camera"></i> Foto Pengambilan</label>
-        <div class="info-edit">* Kosongkan jika tidak ingin mengubah foto lama</div>
-        <input type="file" id="fotoPengambilan" accept="image/*" onchange="previewImg(this, 'prevPengambilan')">
-        <!-- PERBAIKAN: Tambah referrerpolicy agar foto muncul -->
+        <input type="file" id="fotoPengambilan" accept="image/*" onchange="previewImg(this, 'prevPengambilan', 'statusPengambilan')">
         <img id="prevPengambilan" class="thumb" referrerpolicy="no-referrer" style="margin-top:5px; display:none">
+        <!-- PENANDA STATUS UPLOAD -->
+        <div id="statusPengambilan" class="upload-status"><i class="fas fa-check-circle"></i> Sudah upload (Tidak perlu upload ulang)</div>
       </div>
 
       <div style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px">
         <label style="font-size:14px; color:var(--green)"><i class="fas fa-images"></i> Foto Pemakaian Barang (1-21)</label>
-        <div class="info-edit">* Kosongkan jika tidak ingin mengubah foto lama</div>
         <div class="foto-grid" id="pemakaianFotoGrid"></div>
       </div>
 
@@ -149,8 +153,10 @@
     div.className = 'foto-item';
     div.innerHTML = `
       <label style="font-size:9px">Foto ${i}</label>
-      <input type="file" id="fotoPakai${i}" accept="image/*" onchange="previewImg(this, 'prevPakai${i}')">
+      <input type="file" id="fotoPakai${i}" accept="image/*" onchange="previewImg(this, 'prevPakai${i}', 'statusPakai${i}')">
       <img id="prevPakai${i}" class="thumb" referrerpolicy="no-referrer" style="display:none; width:100%; height:80px; margin-top:5px">
+      <!-- PENANDA STATUS UPLOAD PEMAKAIAN -->
+      <div id="statusPakai${i}" class="upload-status"><i class="fas fa-check-circle"></i> Sudah upload</div>
     `;
     fotoGrid.appendChild(div);
   }
@@ -169,19 +175,26 @@
     document.getElementById('materialForm').reset();
     document.getElementById('rowNum').value = "";
     document.querySelectorAll('.thumb').forEach(el => el.style.display = 'none');
+    
+    // Sembunyikan semua tanda status saat buat laporan baru
+    document.querySelectorAll('.upload-status').forEach(el => el.classList.remove('active'));
+    
     document.getElementById('formTitle').innerText = "Form Laporan Baru";
     document.getElementById('submitBtn').innerHTML = '<i class="fas fa-paper-plane"></i> Simpan Laporan';
     const form = document.getElementById('formSection');
     form.style.display = form.style.display === 'none' ? 'block' : 'none';
   }
 
-  function previewImg(input, previewId) {
+  // Ditambah parameter statusId untuk menghilangkan tanda jika user pilih foto baru
+  function previewImg(input, previewId, statusId) {
     if (input.files && input.files[0]) {
       const reader = new FileReader();
       reader.onload = function(e) {
         const prev = document.getElementById(previewId);
         prev.src = e.target.result;
         prev.style.display = 'block';
+        // Hilangkan tanda "Sudah upload" karena user ingin mengganti foto
+        if(statusId) document.getElementById(statusId).classList.remove('active');
       }
       reader.readAsDataURL(input.files[0]);
     }
@@ -227,7 +240,7 @@
     const row = globalData[index];
     if(!row) return;
     document.getElementById('formSection').style.display = 'block';
-    document.getElementById('formTitle').innerText = "Edit Laporan (Kosongkan foto jika tidak ingin ganti)";
+    document.getElementById('formTitle').innerText = "Edit Laporan";
     document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Update Laporan';
     
     document.getElementById('rowNum').value = row.rowNum;
@@ -244,17 +257,31 @@
     document.getElementById('peruntukan').value = row.peruntukan;
 
     const prevAmbil = document.getElementById('prevPengambilan');
-    if(row.fotoPengambilan) { prevAmbil.src = row.fotoPengambilan; prevAmbil.style.display = 'block'; } 
-    else { prevAmbil.style.display = 'none'; }
+    const statusAmbil = document.getElementById('statusPengambilan');
+    if(row.fotoPengambilan) { 
+      prevAmbil.src = row.fotoPengambilan; 
+      prevAmbil.style.display = 'block'; 
+      statusAmbil.classList.add('active'); // TAMPILKAN TANDA SUDAH UPLOAD
+    } else { 
+      prevAmbil.style.display = 'none'; 
+      statusAmbil.classList.remove('active'); 
+    }
 
     for(let i=1; i<=21; i++){
       const prevPakai = document.getElementById(`prevPakai${i}`);
+      const statusPakai = document.getElementById(`statusPakai${i}`);
       const url = row.fotoPemakaian ? row.fotoPemakaian[i-1] : null;
-      if(url) { prevPakai.src = url; prevPakai.style.display = 'block'; } 
-      else { prevPakai.style.display = 'none'; }
+      if(url) { 
+        prevPakai.src = url; 
+        prevPakai.style.display = 'block';
+        statusPakai.classList.add('active'); // TAMPILKAN TANDA SUDAH UPLOAD
+      } else { 
+        prevPakai.style.display = 'none'; 
+        statusPakai.classList.remove('active');
+      }
     }
 
-    // Wajib reset input file agar tidak ikut terkirim jika user tidak mau ganti
+    // Reset input file
     document.getElementById('fotoPengambilan').value = '';
     for(let i=1; i<=21; i++) document.getElementById(`fotoPakai${i}`).value = '';
     
@@ -296,6 +323,7 @@
         alert(payload.rowNum ? 'Laporan berhasil diupdate!' : 'Laporan berhasil disimpan!');
         document.getElementById('materialForm').reset();
         document.querySelectorAll('.thumb').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.upload-status').forEach(el => el.classList.remove('active')); // Sembunyikan tanda
         document.getElementById('formSection').style.display = 'none';
         loadData();
       } else { throw new Error(result.message || 'Gagal menyimpan ke server'); }
