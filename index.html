@@ -125,7 +125,7 @@
   // ==========================================================
   // GANTI DENGAN URL WEB APP ANDA YANG TERBARU!
   // ==========================================================
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyZ_zJ0qIjsMPu11G30HIGaun0qA53e9FYWZ-DURerMKz-6IbyOMUdX8VO4CI97PEMg/exec';
+  const SCRIPT_URL = 'MASUKKAN_URL_WEB_APP_SCRIPT_ANDA_DISINI';
   
   // Buat 21 slot foto dinamis
   const fotoGrid = document.getElementById('pemakaianFotoGrid');
@@ -248,7 +248,7 @@
     tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--muted)"><i class="fas fa-spinner fa-spin"></i> Memuat data...</td></tr>';
     
     try {
-      const response = await fetch(SCRIPT_URL + "?api=data");
+      const response = await fetch(SCRIPT_URL);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
       
