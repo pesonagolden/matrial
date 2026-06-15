@@ -14,17 +14,12 @@
   .cd{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
   .btn{padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;border:none;font-family:inherit;background:var(--accent);color:#000;transition:.2s}
   .btn:hover{opacity:.85}
-  .btn-outline{background:transparent;border:1px solid var(--border);color:var(--fg)}
-  
-  /* Tabel */
   .tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border)}
   table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}
   th{background:rgba(255,255,255,.03);padding:12px;text-align:left;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)}
   td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.03)}
   img.thumb{width:60px;height:40px;object-fit:cover;border-radius:4px;cursor:pointer;border:1px solid var(--border);transition:.2s}
   img.thumb:hover{transform:scale(1.5);z-index:10;position:relative;box-shadow:0 4px 15px rgba(0,0,0,.5)}
-  
-  /* Form */
   .form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:15px}
   .fg{margin-bottom:15px}
   label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:5px}
@@ -32,9 +27,6 @@
   input:focus{outline:none;border-color:var(--accent)}
   input[type="file"]{padding:7px}
   .foto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px}
-  .foto-item{position:relative}
-  .foto-item img{width:100%;height:80px;object-fit:cover;border-radius:6px;border:1px solid var(--border);display:none}
-  
   .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;align-items:center;justify-content:center}
   .modal.active{display:flex}
   .modal img{max-width:90%;max-height:90%;border-radius:8px}
@@ -70,9 +62,7 @@
 
       <div style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px">
         <label style="font-size:14px; color:var(--green)"><i class="fas fa-images"></i> Foto Pemakaian Barang (1-21)</label>
-        <div class="foto-grid" id="pemakaianFotoGrid">
-          <!-- Akan diisi oleh JS -->
-        </div>
+        <div class="foto-grid" id="pemakaianFotoGrid"></div>
       </div>
 
       <button type="submit" class="btn" style="margin-top:20px; width:100%; padding:12px; font-size:14px" id="submitBtn">
@@ -99,22 +89,24 @@
           </tr>
         </thead>
         <tbody id="tableBody">
-          <tr><td colspan="13" style="text-align:center;color:var(--muted)">Memuat data...</td></tr>
+          <tr><td colspan="13" style="text-align:center;color:var(--muted)"><i class="fas fa-spinner fa-spin"></i> Memuat data...</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 </div>
 
-<!-- Modal Preview Foto -->
 <div class="modal" id="imgModal" onclick="this.classList.remove('active')">
   <img src="" id="modalImg">
 </div>
 
 <script>
+  // ==========================================================
+  // PENTING: GANTI DENGAN URL WEB APP ANDA YANG TERBARU!
+  // ==========================================================
   const SCRIPT_URL = 'MASUKKAN_URL_WEB_APP_SCRIPT_ANDA_DISINI';
   
-  // Inisialisasi 21 slot foto pemakaian
+  // Inisialisasi 21 slot foto
   const fotoGrid = document.getElementById('pemakaianFotoGrid');
   for(let i=1; i<=21; i++){
     const div = document.createElement('div');
@@ -148,16 +140,11 @@
     document.getElementById('imgModal').classList.add('active');
   }
 
-  // Convert File to Base64
   function fileToBase64(file) {
     return new Promise((resolve, reject) => {
       if (!file) resolve("");
       const reader = new FileReader();
-      reader.onload = () => {
-        // Hapus header "data:image/jpeg;base64," untuk dikirim ke Apps Script
-        const base64 = reader.result.split(',')[1];
-        resolve(base64);
-      };
+      reader.onload = () => resolve(reader.result.split(',')[1]);
       reader.onerror = error => reject(error);
       reader.readAsDataURL(file);
     });
@@ -170,7 +157,6 @@
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengupload foto ke Drive...';
 
     try {
-      // Kumpulkan data teks
       const payload = {
         namaTeam: document.getElementById('namaTeam').value,
         pic: document.getElementById('pic').value,
@@ -180,17 +166,14 @@
         peruntukan: document.getElementById('peruntukan').value
       };
 
-      // Konversi Foto Pengambilan
       const filePengambilan = document.getElementById('fotoPengambilan').files[0];
       payload.fotoPengambilanBase64 = await fileToBase64(filePengambilan);
 
-      // Konversi 21 Foto Pemakaian
       for(let i=1; i<=21; i++){
         const fileInput = document.getElementById(`fotoPakai${i}`).files[0];
         payload[`fotoPemakaianBase64_${i}`] = await fileToBase64(fileInput);
       }
 
-      // Kirim ke Apps Script
       const response = await fetch(SCRIPT_URL, {
         method: 'POST',
         body: JSON.stringify(payload)
@@ -200,15 +183,14 @@
       if(result.status === 'success') {
         alert('Laporan berhasil disimpan!');
         document.getElementById('materialForm').reset();
-        // Sembunyikan preview
         document.querySelectorAll('.thumb').forEach(el => el.style.display = 'none');
         toggleForm();
         loadData();
       } else {
-        throw new Error(result.message);
+        throw new Error(result.message || 'Gagal menyimpan ke server');
       }
     } catch (error) {
-      alert('Gagal menyimpan: ' + error.message);
+      alert('Error: ' + error.message);
     } finally {
       btn.disabled = false;
       btn.innerHTML = '<i class="fas fa-paper-plane"></i> Simpan Laporan';
@@ -216,13 +198,17 @@
   }
 
   async function loadData() {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--muted)"><i class="fas fa-spinner fa-spin"></i> Memuat data...</td></tr>';
+    
     try {
       const response = await fetch(SCRIPT_URL);
+      if (!response.ok) throw new Error(`Gagal mengambil data (HTTP ${response.status})`);
+      
       const data = await response.json();
-      const tbody = document.getElementById('tableBody');
       
       if(data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--muted)">Belum ada data</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--muted)">Belum ada data laporan</td></tr>';
         return;
       }
 
@@ -230,32 +216,30 @@
       data.reverse().forEach(row => {
         const tr = document.createElement('tr');
         
-        // Kolom Teks
         tr.innerHTML = `
-          <td>${row.tanggal}</td>
-          <td><b>${row.namaTeam}</b></td>
-          <td>${row.pic}</td>
-          <td>${row.jenisBarang}</td>
-          <td>${row.banyakNya}</td>
-          <td>${row.peruntukan}</td>
+          <td>${row.tanggal || '-'}</td>
+          <td><b>${row.namaTeam || '-'}</b></td>
+          <td>${row.pic || '-'}</td>
+          <td>${row.jenisBarang || '-'}</td>
+          <td>${row.banyakNya || '-'}</td>
+          <td>${row.peruntukan || '-'}</td>
           <td>${row.fotoPengambilan ? `<img src="${row.fotoPengambilan}" class="thumb" onclick="openModal(this.src)">` : '-'}</td>
         `;
 
-        // Kolom 21 Foto Pemakaian (Hanya tampilkan 5 di tabel utama, sisanya bisa di scroll atau dibuat detail page)
-        // Di sini saya tampilkan 5 pertama untuk menghemat space tabel, tapi datanya tetap masuk sheet 21 kolom
+        // Tampilkan 5 foto pertama di tabel
         for(let i=0; i<5; i++) {
-          const url = row.fotoPemakaian[i];
+          const url = row.fotoPemakaian ? row.fotoPemakaian[i] : null;
           tr.innerHTML += `<td>${url ? `<img src="${url}" class="thumb" onclick="openModal(this.src)">` : '-'}</td>`;
         }
         
         tbody.appendChild(tr);
       });
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('Load Error:', error);
+      tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;color:var(--red)"><b>Gagal Memuat Data</b><br><small style="color:var(--muted)">${error.message}. Pastikan URL Script sudah benar dan di-deploy ulang.</small></td></tr>`;
     }
   }
 
-  // Panggil saat pertama kali load
   loadData();
 </script>
 </body>
