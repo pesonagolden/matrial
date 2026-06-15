@@ -18,7 +18,7 @@
   table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}
   th{background:rgba(255,255,255,.03);padding:12px;text-align:left;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)}
   td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.03)}
-  img.thumb{width:60px;height:40px;object-fit:cover;border-radius:4px;cursor:pointer;border:1px solid var(--border);transition:.2s;background:#fff}
+  img.thumb{width:60px;height:40px;object-fit:cover;border-radius:4px;cursor:pointer;border:1px solid var(--border);transition:.2s}
   img.thumb:hover{transform:scale(1.5);z-index:10;position:relative;box-shadow:0 4px 15px rgba(0,0,0,.5)}
   .form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:15px}
   .fg{margin-bottom:15px}
@@ -26,7 +26,7 @@
   input, select{width:100%;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);color:var(--fg);font-family:inherit;font-size:13px}
   input:focus, select:focus{outline:none;border-color:var(--accent)}
   input[type="file"]{padding:7px}
-  select option{background:#191d2b;color:var(--fg)}
+  select option{background:#191d2b;color:var(--fg)} /* Warna latar dropdown */
   .foto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px}
   .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;align-items:center;justify-content:center}
   .modal.active{display:flex}
@@ -42,10 +42,13 @@
     <button class="btn" onclick="toggleForm()"><i class="fas fa-plus"></i> Tambah Laporan</button>
   </div>
 
+  <!-- Form Section -->
   <div id="formSection" class="cd" style="display:none">
     <h2 style="font-size:18px;font-weight:700;margin-bottom:15px">Form Laporan Material</h2>
     <form id="materialForm" onsubmit="submitData(event)">
       <div class="form-grid">
+        
+        <!-- DROPDOWN NAMA TEAM -->
         <div class="fg">
           <label>Nama Team</label>
           <select id="namaTeam" required>
@@ -56,8 +59,11 @@
             <option value="PROJECT">PROJECT</option>
           </select>
         </div>
+        
         <div class="fg"><label>PIC</label><input type="text" id="pic" required></div>
         <div class="fg"><label>Tanggal</label><input type="date" id="tanggal" required></div>
+        
+        <!-- DROPDOWN JENIS BARANG -->
         <div class="fg">
           <label>Jenis Barang</label>
           <select id="jenisBarang" required>
@@ -79,6 +85,7 @@
             <option value="BIDI 1G">BIDI 1G</option>
           </select>
         </div>
+        
         <div class="fg"><label>Banyak nya</label><input type="number" id="banyakNya" required></div>
         <div class="fg"><label>Peruntukan</label><input type="text" id="peruntukan" required></div>
       </div>
@@ -100,13 +107,21 @@
     </form>
   </div>
 
+  <!-- Table Section -->
   <div class="cd">
     <div class="tbl-wrap">
       <table>
         <thead>
           <tr>
-            <th>Tanggal</th><th>Team</th><th>PIC</th><th>Barang</th><th>Jml</th><th>Peruntukan</th><th>F. Ambil</th>
-            <th>F1</th><th>F2</th><th>F3</th><th>F4</th><th>F5</th><th>...</th>
+            <th>Tanggal</th>
+            <th>Team</th>
+            <th>PIC</th>
+            <th>Barang</th>
+            <th>Jml</th>
+            <th>Peruntukan</th>
+            <th>F. Ambil</th>
+            <th>F. Pakai 1</th><th>F. Pakai 2</th><th>F. Pakai 3</th><th>F. Pakai 4</th><th>F. Pakai 5</th>
+            <th>...</th>
           </tr>
         </thead>
         <tbody id="tableBody">
@@ -123,11 +138,11 @@
 
 <script>
   // ==========================================================
-  // GANTI DENGAN URL WEB APP ANDA YANG TERBARU!
+  // PENTING: GANTI DENGAN URL WEB APP ANDA YANG TERBARU!
   // ==========================================================
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwbKkvZQ_UIEoqL1IJNEox7R1RtoTiqUP2EdmtmncTsSHnsJs7Z79_PqbjJ0rIbcIcD/exec';
   
-  // Buat 21 slot foto dinamis
+  // Inisialisasi 21 slot foto
   const fotoGrid = document.getElementById('pemakaianFotoGrid');
   for(let i=1; i<=21; i++){
     const div = document.createElement('div');
@@ -161,32 +176,12 @@
     document.getElementById('imgModal').classList.add('active');
   }
 
-  // FUNGSI KOMPRESI FOTO (Wajib agar tidak kebablasan limit 10MB Google Script)
-  function compressImage(file) {
-    return new Promise((resolve) => {
-      if (!file) { resolve(""); return; }
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      if (!file) resolve("");
       const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
-          const maxWidth = 1200; // Maksimal lebar 1200px (ukuran file jadi kecil ~200KB)
-          if (width > maxWidth) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
-          }
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          // Kualitas 70% (0.7)
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-          resolve(dataUrl.split(',')[1]); // Ambil bagian Base64 saja
-        };
-        img.src = e.target.result;
-      };
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = error => reject(error);
       reader.readAsDataURL(file);
     });
   }
@@ -195,7 +190,7 @@
     e.preventDefault();
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kompresi & Upload...';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengupload foto ke Drive...';
 
     try {
       const payload = {
@@ -207,27 +202,22 @@
         peruntukan: document.getElementById('peruntukan').value
       };
 
-      // Kompresi Foto Pengambilan
       const filePengambilan = document.getElementById('fotoPengambilan').files[0];
-      payload.fotoPengambilanBase64 = await compressImage(filePengambilan);
+      payload.fotoPengambilanBase64 = await fileToBase64(filePengambilan);
 
-      // Kompresi 21 Foto Pemakaian
       for(let i=1; i<=21; i++){
         const fileInput = document.getElementById(`fotoPakai${i}`).files[0];
-        payload[`fotoPemakaianBase64_${i}`] = await compressImage(fileInput);
+        payload[`fotoPemakaianBase64_${i}`] = await fileToBase64(fileInput);
       }
 
-      // Kirim ke Apps Script dengan Header text/plain (Wajib agar tidak kena CORS)
       const response = await fetch(SCRIPT_URL, {
         method: 'POST',
-        headers: { "Content-Type": "text/plain" },
         body: JSON.stringify(payload)
       });
-      
       const result = await response.json();
 
       if(result.status === 'success') {
-        alert('Laporan berhasil disimpan ke Drive & Spreadsheet!');
+        alert('Laporan berhasil disimpan!');
         document.getElementById('materialForm').reset();
         document.querySelectorAll('.thumb').forEach(el => el.style.display = 'none');
         toggleForm();
@@ -249,11 +239,12 @@
     
     try {
       const response = await fetch(SCRIPT_URL);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (!response.ok) throw new Error(`Gagal mengambil data (HTTP ${response.status})`);
+      
       const data = await response.json();
       
       if(data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--muted)">Belum ada data</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--muted)">Belum ada data laporan</td></tr>';
         return;
       }
 
@@ -271,7 +262,6 @@
           <td>${row.fotoPengambilan ? `<img src="${row.fotoPengambilan}" class="thumb" onclick="openModal(this.src)">` : '-'}</td>
         `;
 
-        // Tampilkan 5 foto pertama di tabel
         for(let i=0; i<5; i++) {
           const url = row.fotoPemakaian ? row.fotoPemakaian[i] : null;
           tr.innerHTML += `<td>${url ? `<img src="${url}" class="thumb" onclick="openModal(this.src)">` : '-'}</td>`;
@@ -280,7 +270,8 @@
         tbody.appendChild(tr);
       });
     } catch (error) {
-      tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;color:var(--red)"><b>Gagal Memuat Data</b><br><small style="color:var(--muted)">${error.message}</small></td></tr>`;
+      console.error('Load Error:', error);
+      tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;color:var(--red)"><b>Gagal Memuat Data</b><br><small style="color:var(--muted)">${error.message}. Pastikan URL Script sudah benar dan di-deploy ulang.</small></td></tr>`;
     }
   }
 
