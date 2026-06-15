@@ -40,10 +40,7 @@
   .foto-cell{display:flex;flex-direction:column;align-items:center;gap:4px}
   .drive-link{color:var(--blue);font-size:10px;text-decoration:none;display:flex;align-items:center;gap:3px}
   .drive-link:hover{color:#60a5fa; text-decoration:underline}
-  
-  /* CSS Fallback jika foto gagal dimuat */
   .fallback-img{width:60px; height:40px; display:none; align-items:center; justify-content:center; border:1px solid var(--border); border-radius:4px; background:rgba(255,255,255,.03); color:var(--muted); font-size:12px;}
-  
   .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;flex-direction:column}
   .modal.active{display:flex}
   .modal img{max-width:90%;max-height:80%;border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,.5)}
@@ -51,6 +48,7 @@
   .btn-modal{padding:8px 16px; border-radius:6px; text-decoration:none; font-size:12px; font-weight:700; border:none; cursor:pointer; font-family:inherit}
   .btn-drive{background:var(--blue); color:#fff}
   .btn-close{background:var(--red); color:#fff}
+  .empty-cell{color:var(--muted); font-size:10px; font-style:italic}
 </style>
 </head>
 <body>
@@ -157,7 +155,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwws5N1VrzreQz0Frcimh1MV1IzO4Gcv5oieIqZTKU-XfvplBQ_kuYCAN7YkhHiVfqB/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxXf2wS0OjaGwrDbKzdKcLGfx9yoVn0KHxiGipvM8V__QdUr0haR4twVHgpC8VJ_24N/exec';
   let globalData = [];
   
   const fotoGrid = document.getElementById('pemakaianFotoGrid');
@@ -173,12 +171,11 @@
     fotoGrid.appendChild(div);
   }
 
-  // FUNGSI PENCARI ID YANG SANGAT ROBUST (Bisa membaca hampir semua format link Drive)
   function getFileId(url) {
     if (!url || typeof url !== 'string') return null;
-    let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/); // Format /d/ID
+    let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
     if (match) return match[1];
-    match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/); // Format ?id=ID
+    match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
     if (match) return match[1];
     return null;
   }
@@ -363,11 +360,10 @@
     finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Simpan'; }
   }
 
-  // FUNGSI UNTUK MERENDER THUMBNAIL DI TABEL DENGAN AMAN
   function renderFotoCell(url) {
     const fileId = getFileId(url);
     if (fileId) {
-      const imgSrc = `https://lh3.googleusercontent.com/d/${fileId}=s800`; // Rekonstruksi URL pasti benar
+      const imgSrc = `https://lh3.googleusercontent.com/d/${fileId}=s800`;
       const driveUrl = `https://drive.google.com/file/d/${fileId}/view?usp=sharing`;
       return `
         <td>
@@ -380,14 +376,15 @@
           </div>
         </td>`;
     }
-    return '<td>-</td>'; // Jika tidak ada ID ditemukan, tetap tampilkan strip
+    return '<td class="empty-cell">Kosong</td>'; // Jika tidak ada link, tulis "Kosong"
   }
 
   async function loadData() {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;color:var(--muted)"><i class="fas fa-spinner fa-spin"></i> Memuat data...</td></tr>';
     try {
-      const response = await fetch(SCRIPT_URL + '?action=load');
+      // PERBAIKAN CACHE: Tambahkan timestamp agar browser selalu mengambil data terbaru dari server
+      const response = await fetch(SCRIPT_URL + '?action=load&t=' + new Date().getTime());
       if (!response.ok) throw new Error('Gagal mengambil data');
       const data = await response.json();
       globalData = data;
