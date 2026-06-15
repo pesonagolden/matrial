@@ -33,16 +33,17 @@
   .info-edit{font-size:10px; color:var(--green); margin-top:2px;}
   .upload-status{display:none; color:var(--green); font-size:10px; margin-top:4px; font-weight:600; align-items:center; gap:4px}
   .upload-status.active{display:flex}
-  
-  /* CSS Tambahan untuk Galeri Thumbnail di Form */
   .existing-gallery-wrap{background:rgba(255,255,255,.02); border:1px dashed var(--border); border-radius:8px; padding:12px; margin-bottom:15px; display:none;}
   .existing-gallery-wrap.active{display:block}
   .gallery-thumb{width:50px; height:50px; object-fit:cover; border-radius:6px; cursor:pointer; border:2px solid var(--border); transition:.2s}
   .gallery-thumb:hover{transform:scale(1.1); border-color:var(--green); box-shadow:0 2px 10px rgba(0,0,0,.5)}
-  
   .foto-cell{display:flex;flex-direction:column;align-items:center;gap:4px}
   .drive-link{color:var(--blue);font-size:10px;text-decoration:none;display:flex;align-items:center;gap:3px}
   .drive-link:hover{color:#60a5fa; text-decoration:underline}
+  
+  /* CSS Fallback jika foto gagal dimuat */
+  .fallback-img{width:60px; height:40px; display:none; align-items:center; justify-content:center; border:1px solid var(--border); border-radius:4px; background:rgba(255,255,255,.03); color:var(--muted); font-size:12px;}
+  
   .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;flex-direction:column}
   .modal.active{display:flex}
   .modal img{max-width:90%;max-height:80%;border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,.5)}
@@ -104,13 +105,10 @@
       
       <div style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px">
         <label style="font-size:14px; color:var(--accent)"><i class="fas fa-camera"></i> Foto Pengambilan</label>
-        
-        <!-- GALERI THUMBNAIL FOTO PENGAMBILAN SUDAH ADA -->
         <div id="existingAmbilWrap" class="existing-gallery-wrap">
           <label style="font-size:10px; margin-bottom:8px; display:block; color:var(--green)"><i class="fas fa-check-circle"></i> Foto lama sudah ada (Klik untuk lihat):</label>
           <div id="existingAmbilGallery" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
         </div>
-
         <input type="file" id="fotoPengambilan" accept="image/*" onchange="previewImg(this, 'prevPengambilan', 'statusPengambilan')">
         <img id="prevPengambilan" class="thumb" referrerpolicy="no-referrer" style="margin-top:5px; display:none">
         <div id="statusPengambilan" class="upload-status"><i class="fas fa-check-circle"></i> Sudah upload (Tidak perlu upload ulang)</div>
@@ -118,13 +116,10 @@
 
       <div style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px">
         <label style="font-size:14px; color:var(--green)"><i class="fas fa-images"></i> Foto Pemakaian Barang (1-21)</label>
-        
-        <!-- GALERI THUMBNAIL FOTO PEMAKAIAN SUDAH ADA -->
         <div id="existingPakaiWrap" class="existing-gallery-wrap">
           <label style="font-size:10px; margin-bottom:8px; display:block; color:var(--green)"><i class="fas fa-check-circle"></i> Foto lama sudah ada (Klik thumbnail untuk lihat):</label>
           <div id="existingPakaiGallery" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
         </div>
-
         <div class="info-edit">* Kosongkan jika tidak ingin mengubah foto lama</div>
         <div class="foto-grid" id="pemakaianFotoGrid"></div>
       </div>
@@ -178,14 +173,14 @@
     fotoGrid.appendChild(div);
   }
 
-  function getDriveUrl(imgUrl) {
-    if (!imgUrl) return '#';
-    const parts = imgUrl.split('/d/');
-    if (parts[1]) {
-      const fileId = parts[1].split('=')[0];
-      return `https://drive.google.com/file/d/${fileId}/view?usp=sharing`;
-    }
-    return '#';
+  // FUNGSI PENCARI ID YANG SANGAT ROBUST (Bisa membaca hampir semua format link Drive)
+  function getFileId(url) {
+    if (!url || typeof url !== 'string') return null;
+    let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/); // Format /d/ID
+    if (match) return match[1];
+    match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/); // Format ?id=ID
+    if (match) return match[1];
+    return null;
   }
 
   function openNewForm() {
@@ -193,11 +188,8 @@
     document.getElementById('rowNum').value = "";
     document.querySelectorAll('.thumb').forEach(el => el.style.display = 'none');
     document.querySelectorAll('.upload-status').forEach(el => el.classList.remove('active'));
-    
-    // Sembunyikan galeri existing saat buat baru
     document.getElementById('existingAmbilWrap').classList.remove('active');
     document.getElementById('existingPakaiWrap').classList.remove('active');
-    
     document.getElementById('formTitle').innerText = "Form Laporan Baru";
     document.getElementById('submitBtn').innerHTML = '<i class="fas fa-paper-plane"></i> Simpan Laporan';
     const form = document.getElementById('formSection');
@@ -273,47 +265,46 @@
     document.getElementById('banyakNya').value = row.banyakNya;
     document.getElementById('peruntukan').value = row.peruntukan;
 
-    // --- PROSES GALERI THUMBNAIL PENGAMBILAN ---
     const ambilWrap = document.getElementById('existingAmbilWrap');
     const ambilGallery = document.getElementById('existingAmbilGallery');
-    ambilGallery.innerHTML = ''; // Kosongkan dulu
-    document.getElementById('prevPengambilan').style.display = 'none'; // Sembunyikan preview file
+    ambilGallery.innerHTML = ''; 
+    document.getElementById('prevPengambilan').style.display = 'none'; 
     
-    if(row.fotoPengambilan) { 
+    const fileIdAmbil = getFileId(row.fotoPengambilan);
+    if(fileIdAmbil) { 
       ambilWrap.classList.add('active');
-      const driveUrl = getDriveUrl(row.fotoPengambilan);
+      const imgSrc = `https://lh3.googleusercontent.com/d/${fileIdAmbil}=s800`;
+      const driveUrl = `https://drive.google.com/file/d/${fileIdAmbil}/view?usp=sharing`;
       const img = document.createElement('img');
-      img.src = row.fotoPengambilan;
+      img.src = imgSrc;
       img.className = 'gallery-thumb';
       img.referrerpolicy = 'no-referrer';
-      img.onclick = () => openModal(img.src, driveUrl);
+      img.onclick = () => openModal(imgSrc, driveUrl);
       ambilGallery.appendChild(img);
     } else { 
       ambilWrap.classList.remove('active'); 
     }
 
-    // --- PROSES GALERI THUMBNAIL PEMAKAIAN ---
     const pakaiWrap = document.getElementById('existingPakaiWrap');
     const pakaiGallery = document.getElementById('existingPakaiGallery');
-    pakaiGallery.innerHTML = ''; // Kosongkan dulu
+    pakaiGallery.innerHTML = ''; 
     
     let hasExistingPakai = false;
     for(let i=1; i<=21; i++){
       const url = row.fotoPemakaian ? row.fotoPemakaian[i-1] : null;
-      const prevPakai = document.getElementById(`prevPakai${i}`);
-      
-      // Sembunyikan preview di masing-masing slot agar form tidak panjang
-      prevPakai.style.display = 'none';
+      document.getElementById(`prevPakai${i}`).style.display = 'none';
       document.getElementById(`statusPakai${i}`).classList.remove('active');
 
-      if(url) { 
+      const fileIdPakai = getFileId(url);
+      if(fileIdPakai) { 
         hasExistingPakai = true;
-        const driveUrl = getDriveUrl(url);
+        const imgSrc = `https://lh3.googleusercontent.com/d/${fileIdPakai}=s800`;
+        const driveUrl = `https://drive.google.com/file/d/${fileIdPakai}/view?usp=sharing`;
         const img = document.createElement('img');
-        img.src = url;
+        img.src = imgSrc;
         img.className = 'gallery-thumb';
         img.referrerpolicy = 'no-referrer';
-        img.onclick = () => openModal(img.src, driveUrl);
+        img.onclick = () => openModal(imgSrc, driveUrl);
         pakaiGallery.appendChild(img);
       }
     }
@@ -321,7 +312,6 @@
     if(hasExistingPakai) pakaiWrap.classList.add('active');
     else pakaiWrap.classList.remove('active');
 
-    // Reset input file agar tidak ikut terkirim
     document.getElementById('fotoPengambilan').value = '';
     for(let i=1; i<=21; i++) document.getElementById(`fotoPakai${i}`).value = '';
     
@@ -373,6 +363,26 @@
     finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Simpan'; }
   }
 
+  // FUNGSI UNTUK MERENDER THUMBNAIL DI TABEL DENGAN AMAN
+  function renderFotoCell(url) {
+    const fileId = getFileId(url);
+    if (fileId) {
+      const imgSrc = `https://lh3.googleusercontent.com/d/${fileId}=s800`; // Rekonstruksi URL pasti benar
+      const driveUrl = `https://drive.google.com/file/d/${fileId}/view?usp=sharing`;
+      return `
+        <td>
+          <div class="foto-cell">
+            <img src="${imgSrc}" class="thumb" referrerpolicy="no-referrer" 
+                 onclick="openModal(this.src, '${driveUrl}')" 
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="fallback-img"><i class="fas fa-unlink"></i></div>
+            <a href="${driveUrl}" target="_blank" class="drive-link"><i class="fas fa-link"></i> Drive</a>
+          </div>
+        </td>`;
+    }
+    return '<td>-</td>'; // Jika tidak ada ID ditemukan, tetap tampilkan strip
+  }
+
   async function loadData() {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;color:var(--muted)"><i class="fas fa-spinner fa-spin"></i> Memuat data...</td></tr>';
@@ -390,17 +400,6 @@
       tbody.innerHTML = '';
       data.reverse().forEach((row, index) => {
         const tr = document.createElement('tr');
-        
-        let fotoAmbilHtml = '-';
-        if(row.fotoPengambilan) {
-          const driveUrl = getDriveUrl(row.fotoPengambilan);
-          fotoAmbilHtml = `
-            <div class="foto-cell">
-              <img src="${row.fotoPengambilan}" class="thumb" referrerpolicy="no-referrer" onclick="openModal(this.src, '${driveUrl}')">
-              <a href="${driveUrl}" target="_blank" class="drive-link"><i class="fas fa-link"></i> Drive</a>
-            </div>`;
-        }
-
         let actionHtml = `<button class="btn btn-sm btn-blue" onclick="editRow(${index})"><i class="fas fa-edit"></i> Edit</button>`;
 
         tr.innerHTML = `
@@ -411,24 +410,14 @@
           <td>${row.jenisBarang || '-'}</td>
           <td>${row.banyakNya || '-'}</td>
           <td>${row.peruntukan || '-'}</td>
-          <td>${fotoAmbilHtml}</td>
+          ${renderFotoCell(row.fotoPengambilan)}
         `;
 
         for(let i=0; i<5; i++) {
           const url = row.fotoPemakaian ? row.fotoPemakaian[i] : null;
-          if(url) {
-            const driveUrl = getDriveUrl(url);
-            tr.innerHTML += `
-              <td>
-                <div class="foto-cell">
-                  <img src="${url}" class="thumb" referrerpolicy="no-referrer" onclick="openModal(this.src, '${driveUrl}')">
-                  <a href="${driveUrl}" target="_blank" class="drive-link"><i class="fas fa-link"></i> Drive</a>
-                </div>
-              </td>`;
-          } else {
-            tr.innerHTML += `<td>-</td>`;
-          }
+          tr.innerHTML += renderFotoCell(url);
         }
+        
         tbody.appendChild(tr);
       });
     } catch (error) {
