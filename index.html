@@ -24,8 +24,9 @@
   .fg{margin-bottom:15px}
   label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:5px}
   input, select{width:100%;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);color:var(--fg);font-family:inherit;font-size:13px}
-  input:focus{outline:none;border-color:var(--accent)}
+  input:focus, select:focus{outline:none;border-color:var(--accent)}
   input[type="file"]{padding:7px}
+  select option{background:var(--card);color:var(--fg)}
   .foto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px}
   .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;align-items:center;justify-content:center}
   .modal.active{display:flex}
@@ -49,7 +50,15 @@
         <div class="fg"><label>Nama Team</label><input type="text" id="namaTeam" required></div>
         <div class="fg"><label>PIC</label><input type="text" id="pic" required></div>
         <div class="fg"><label>Tanggal</label><input type="date" id="tanggal" required></div>
-        <div class="fg"><label>Jenis Barang</label><input type="text" id="jenisBarang" required></div>
+        
+        <!-- INI SUDAH DIUBAH MENJADI DROPDOWN -->
+        <div class="fg">
+          <label>Jenis Barang</label>
+          <select id="jenisBarang" required>
+            <option value="">Memuat kategori...</option>
+          </select>
+        </div>
+        
         <div class="fg"><label>Banyak nya</label><input type="number" id="banyakNya" required></div>
         <div class="fg"><label>Peruntukan</label><input type="text" id="peruntukan" required></div>
       </div>
@@ -104,7 +113,7 @@
   // ==========================================================
   // PENTING: GANTI DENGAN URL WEB APP ANDA YANG TERBARU!
   // ==========================================================
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzi-aLdJF8X7PwwcQieNv357vwbgoxVZCEsjepzniYn7GiQZh2h3l-r7B0n5McgQioU/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsjLOinDo7YXNQXEmzIRxeY0Waj9VFmOqFKif-AP8/dev';
   
   // Inisialisasi 21 slot foto
   const fotoGrid = document.getElementById('pemakaianFotoGrid');
@@ -161,7 +170,7 @@
         namaTeam: document.getElementById('namaTeam').value,
         pic: document.getElementById('pic').value,
         tanggal: document.getElementById('tanggal').value,
-        jenisBarang: document.getElementById('jenisBarang').value,
+        jenisBarang: document.getElementById('jenisBarang').value, // Sekarang mengambil value dari Dropdown
         banyakNya: document.getElementById('banyakNya').value,
         peruntukan: document.getElementById('peruntukan').value
       };
@@ -199,14 +208,28 @@
 
   async function loadData() {
     const tbody = document.getElementById('tableBody');
+    const selectBarang = document.getElementById('jenisBarang');
     tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--muted)"><i class="fas fa-spinner fa-spin"></i> Memuat data...</td></tr>';
+    selectBarang.innerHTML = '<option value="">Memuat kategori...</option>';
     
     try {
       const response = await fetch(SCRIPT_URL);
       if (!response.ok) throw new Error(`Gagal mengambil data (HTTP ${response.status})`);
       
-      const data = await response.json();
+      const result = await response.json();
+      const data = result.data || []; // Data laporan ada di array "data"
+      const categories = result.categories || []; // Kategori ada di array "categories"
       
+      // 1. Isi Dropdown Jenis Barang
+      selectBarang.innerHTML = '<option value="">-- Pilih Jenis Barang --</option>';
+      categories.forEach(cat => {
+        let opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        selectBarang.appendChild(opt);
+      });
+
+      // 2. Isi Tabel Data
       if(data.length === 0) {
         tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--muted)">Belum ada data laporan</td></tr>';
         return;
@@ -226,7 +249,6 @@
           <td>${row.fotoPengambilan ? `<img src="${row.fotoPengambilan}" class="thumb" onclick="openModal(this.src)">` : '-'}</td>
         `;
 
-        // Tampilkan 5 foto pertama di tabel
         for(let i=0; i<5; i++) {
           const url = row.fotoPemakaian ? row.fotoPemakaian[i] : null;
           tr.innerHTML += `<td>${url ? `<img src="${url}" class="thumb" onclick="openModal(this.src)">` : '-'}</td>`;
