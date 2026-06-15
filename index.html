@@ -31,13 +31,9 @@
   select option{background:#191d2b;color:var(--fg)}
   .foto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px}
   .info-edit{font-size:10px; color:var(--green); margin-top:2px;}
-  
-  /* CSS Tambahan untuk Foto Cell & Link Drive */
   .foto-cell{display:flex;flex-direction:column;align-items:center;gap:4px}
   .drive-link{color:var(--blue);font-size:10px;text-decoration:none;display:flex;align-items:center;gap:3px}
   .drive-link:hover{color:#60a5fa; text-decoration:underline}
-  
-  /* CSS Tambahan untuk Modal */
   .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;flex-direction:column}
   .modal.active{display:flex}
   .modal img{max-width:90%;max-height:80%;border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,.5)}
@@ -101,7 +97,8 @@
         <label style="font-size:14px; color:var(--accent)"><i class="fas fa-camera"></i> Foto Pengambilan</label>
         <div class="info-edit">* Kosongkan jika tidak ingin mengubah foto lama</div>
         <input type="file" id="fotoPengambilan" accept="image/*" onchange="previewImg(this, 'prevPengambilan')">
-        <img id="prevPengambilan" class="thumb" style="margin-top:5px; display:none">
+        <!-- PERBAIKAN: Tambah referrerpolicy agar foto muncul -->
+        <img id="prevPengambilan" class="thumb" referrerpolicy="no-referrer" style="margin-top:5px; display:none">
       </div>
 
       <div style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px">
@@ -134,11 +131,10 @@
   </div>
 </div>
 
-<!-- Modal dengan Tombol Buka Drive -->
 <div class="modal" id="imgModal" onclick="closeModal(event)">
-  <img src="" id="modalImg" onclick="event.stopPropagation()">
+  <img src="" id="modalImg" referrerpolicy="no-referrer" onclick="event.stopPropagation()">
   <div class="modal-actions" onclick="event.stopPropagation()">
-    <a href="#" id="modalDriveLink" target="_blank" class="btn-modal btn-drive"><i class="fas fa-external-link-alt"></i> Buka di Google Drive</a>
+    <a href="#" id="modalDriveLink" target="_blank" class="btn-modal btn-drive"><i class="fas fa-external-link-alt"></i> Buka di Drive</a>
     <button onclick="document.getElementById('imgModal').classList.remove('active')" class="btn-modal btn-close"><i class="fas fa-times"></i> Tutup</button>
   </div>
 </div>
@@ -154,15 +150,13 @@
     div.innerHTML = `
       <label style="font-size:9px">Foto ${i}</label>
       <input type="file" id="fotoPakai${i}" accept="image/*" onchange="previewImg(this, 'prevPakai${i}')">
-      <img id="prevPakai${i}" class="thumb" style="display:none; width:100%; height:80px; margin-top:5px">
+      <img id="prevPakai${i}" class="thumb" referrerpolicy="no-referrer" style="display:none; width:100%; height:80px; margin-top:5px">
     `;
     fotoGrid.appendChild(div);
   }
 
-  // Fungsi untuk mengubah URL thumbnail (lh3) menjadi Link Google Drive asli
   function getDriveUrl(imgUrl) {
     if (!imgUrl) return '#';
-    // Format: https://lh3.googleusercontent.com/d/FILE_ID=s600
     const parts = imgUrl.split('/d/');
     if (parts[1]) {
       const fileId = parts[1].split('=')[0];
@@ -185,8 +179,9 @@
     if (input.files && input.files[0]) {
       const reader = new FileReader();
       reader.onload = function(e) {
-        document.getElementById(previewId).src = e.target.result;
-        document.getElementById(previewId).style.display = 'block';
+        const prev = document.getElementById(previewId);
+        prev.src = e.target.result;
+        prev.style.display = 'block';
       }
       reader.readAsDataURL(input.files[0]);
     }
@@ -232,7 +227,7 @@
     const row = globalData[index];
     if(!row) return;
     document.getElementById('formSection').style.display = 'block';
-    document.getElementById('formTitle').innerText = "Edit Laporan";
+    document.getElementById('formTitle').innerText = "Edit Laporan (Kosongkan foto jika tidak ingin ganti)";
     document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Update Laporan';
     
     document.getElementById('rowNum').value = row.rowNum;
@@ -259,8 +254,10 @@
       else { prevPakai.style.display = 'none'; }
     }
 
+    // Wajib reset input file agar tidak ikut terkirim jika user tidak mau ganti
     document.getElementById('fotoPengambilan').value = '';
     for(let i=1; i<=21; i++) document.getElementById(`fotoPakai${i}`).value = '';
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -279,8 +276,10 @@
         banyakNya: document.getElementById('banyakNya').value,
         peruntukan: document.getElementById('peruntukan').value
       };
+      
       const filePengambilan = document.getElementById('fotoPengambilan').files[0];
       payload.fotoPengambilanBase64 = await compressImage(filePengambilan);
+
       for(let i=1; i<=21; i++){
         const fileInput = document.getElementById(`fotoPakai${i}`).files[0];
         payload[`fotoPemakaianBase64_${i}`] = await compressImage(fileInput);
@@ -327,7 +326,7 @@
           const driveUrl = getDriveUrl(row.fotoPengambilan);
           fotoAmbilHtml = `
             <div class="foto-cell">
-              <img src="${row.fotoPengambilan}" class="thumb" onclick="openModal(this.src, '${driveUrl}')">
+              <img src="${row.fotoPengambilan}" class="thumb" referrerpolicy="no-referrer" onclick="openModal(this.src, '${driveUrl}')">
               <a href="${driveUrl}" target="_blank" class="drive-link"><i class="fas fa-link"></i> Drive</a>
             </div>`;
         }
@@ -352,7 +351,7 @@
             tr.innerHTML += `
               <td>
                 <div class="foto-cell">
-                  <img src="${url}" class="thumb" onclick="openModal(this.src, '${driveUrl}')">
+                  <img src="${url}" class="thumb" referrerpolicy="no-referrer" onclick="openModal(this.src, '${driveUrl}')">
                   <a href="${driveUrl}" target="_blank" class="drive-link"><i class="fas fa-link"></i> Drive</a>
                 </div>
               </td>`;
