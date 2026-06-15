@@ -26,7 +26,7 @@
   input, select{width:100%;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);color:var(--fg);font-family:inherit;font-size:13px}
   input:focus, select:focus{outline:none;border-color:var(--accent)}
   input[type="file"]{padding:7px}
-  select option{background:var(--card);color:var(--fg)}
+  select option{background:#191d2b;color:var(--fg)} /* Warna latar dropdown */
   .foto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px}
   .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;align-items:center;justify-content:center}
   .modal.active{display:flex}
@@ -47,15 +47,42 @@
     <h2 style="font-size:18px;font-weight:700;margin-bottom:15px">Form Laporan Material</h2>
     <form id="materialForm" onsubmit="submitData(event)">
       <div class="form-grid">
-        <div class="fg"><label>Nama Team</label><input type="text" id="namaTeam" required></div>
+        
+        <!-- DROPDOWN NAMA TEAM -->
+        <div class="fg">
+          <label>Nama Team</label>
+          <select id="namaTeam" required>
+            <option value="">-- Pilih Team --</option>
+            <option value="APCSD">APCSD</option>
+            <option value="FTTX">FTTX</option>
+            <option value="COREMAN">COREMAN</option>
+            <option value="PROJECT">PROJECT</option>
+          </select>
+        </div>
+        
         <div class="fg"><label>PIC</label><input type="text" id="pic" required></div>
         <div class="fg"><label>Tanggal</label><input type="date" id="tanggal" required></div>
         
-        <!-- INI SUDAH DIUBAH MENJADI DROPDOWN -->
+        <!-- DROPDOWN JENIS BARANG -->
         <div class="fg">
           <label>Jenis Barang</label>
           <select id="jenisBarang" required>
-            <option value="">Memuat kategori...</option>
+            <option value="">-- Pilih Jenis Barang --</option>
+            <option value="JC 96">JC 96</option>
+            <option value="OTB UPC 96">OTB UPC 96</option>
+            <option value="OTB APC 96">OTB APC 96</option>
+            <option value="OTB 24">OTB 24</option>
+            <option value="PATCHSCORE SC-LC">PATCHSCORE SC-LC</option>
+            <option value="PATCHSCORE FC-LC">PATCHSCORE FC-LC</option>
+            <option value="BAREL UPC">BAREL UPC</option>
+            <option value="BAREL">BAREL</option>
+            <option value="APC">APC</option>
+            <option value="SFP 1G">SFP 1G</option>
+            <option value="SFP 10G">SFP 10G</option>
+            <option value="SFP 100G">SFP 100G</option>
+            <option value="BIDI 10G">BIDI 10G</option>
+            <option value="BIDI 100G">BIDI 100G</option>
+            <option value="BIDI 1G">BIDI 1G</option>
           </select>
         </div>
         
@@ -113,7 +140,7 @@
   // ==========================================================
   // PENTING: GANTI DENGAN URL WEB APP ANDA YANG TERBARU!
   // ==========================================================
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyIRP9Omqou5pwyPpVm85CBKqidarbQtMomFeOw7lxs5yAW66ILYGjaPrz9DTmvd10c/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz68M0MxPSyTlVpWta8LtyGUXpdmputH9oWjWQVS4Pbq08nuu-2f56Z0r2jQ8n0-cw/exec';
   
   // Inisialisasi 21 slot foto
   const fotoGrid = document.getElementById('pemakaianFotoGrid');
@@ -170,7 +197,7 @@
         namaTeam: document.getElementById('namaTeam').value,
         pic: document.getElementById('pic').value,
         tanggal: document.getElementById('tanggal').value,
-        jenisBarang: document.getElementById('jenisBarang').value, // Sekarang mengambil value dari Dropdown
+        jenisBarang: document.getElementById('jenisBarang').value,
         banyakNya: document.getElementById('banyakNya').value,
         peruntukan: document.getElementById('peruntukan').value
       };
@@ -208,28 +235,14 @@
 
   async function loadData() {
     const tbody = document.getElementById('tableBody');
-    const selectBarang = document.getElementById('jenisBarang');
     tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--muted)"><i class="fas fa-spinner fa-spin"></i> Memuat data...</td></tr>';
-    selectBarang.innerHTML = '<option value="">Memuat kategori...</option>';
     
     try {
       const response = await fetch(SCRIPT_URL);
       if (!response.ok) throw new Error(`Gagal mengambil data (HTTP ${response.status})`);
       
-      const result = await response.json();
-      const data = result.data || []; // Data laporan ada di array "data"
-      const categories = result.categories || []; // Kategori ada di array "categories"
+      const data = await response.json();
       
-      // 1. Isi Dropdown Jenis Barang
-      selectBarang.innerHTML = '<option value="">-- Pilih Jenis Barang --</option>';
-      categories.forEach(cat => {
-        let opt = document.createElement('option');
-        opt.value = cat;
-        opt.textContent = cat;
-        selectBarang.appendChild(opt);
-      });
-
-      // 2. Isi Tabel Data
       if(data.length === 0) {
         tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--muted)">Belum ada data laporan</td></tr>';
         return;
