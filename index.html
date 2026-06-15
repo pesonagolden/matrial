@@ -30,10 +30,21 @@
   input[type="file"]{padding:7px}
   select option{background:#191d2b;color:var(--fg)}
   .foto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px}
-  .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;align-items:center;justify-content:center}
-  .modal.active{display:flex}
-  .modal img{max-width:90%;max-height:90%;border-radius:8px}
   .info-edit{font-size:10px; color:var(--green); margin-top:2px;}
+  
+  /* CSS Tambahan untuk Foto Cell & Link Drive */
+  .foto-cell{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .drive-link{color:var(--blue);font-size:10px;text-decoration:none;display:flex;align-items:center;gap:3px}
+  .drive-link:hover{color:#60a5fa; text-decoration:underline}
+  
+  /* CSS Tambahan untuk Modal */
+  .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;flex-direction:column}
+  .modal.active{display:flex}
+  .modal img{max-width:90%;max-height:80%;border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,.5)}
+  .modal-actions{margin-top:15px; display:flex; gap:10px}
+  .btn-modal{padding:8px 16px; border-radius:6px; text-decoration:none; font-size:12px; font-weight:700; border:none; cursor:pointer; font-family:inherit}
+  .btn-drive{background:var(--blue); color:#fff}
+  .btn-close{background:var(--red); color:#fff}
 </style>
 </head>
 <body>
@@ -123,13 +134,18 @@
   </div>
 </div>
 
-<div class="modal" id="imgModal" onclick="this.classList.remove('active')">
-  <img src="" id="modalImg">
+<!-- Modal dengan Tombol Buka Drive -->
+<div class="modal" id="imgModal" onclick="closeModal(event)">
+  <img src="" id="modalImg" onclick="event.stopPropagation()">
+  <div class="modal-actions" onclick="event.stopPropagation()">
+    <a href="#" id="modalDriveLink" target="_blank" class="btn-modal btn-drive"><i class="fas fa-external-link-alt"></i> Buka di Google Drive</a>
+    <button onclick="document.getElementById('imgModal').classList.remove('active')" class="btn-modal btn-close"><i class="fas fa-times"></i> Tutup</button>
+  </div>
 </div>
 
 <script>
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwws5N1VrzreQz0Frcimh1MV1IzO4Gcv5oieIqZTKU-XfvplBQ_kuYCAN7YkhHiVfqB/exec';
-  let globalData = []; // Simpan data global untuk kebutuhan edit
+  let globalData = [];
   
   const fotoGrid = document.getElementById('pemakaianFotoGrid');
   for(let i=1; i<=21; i++){
@@ -143,13 +159,24 @@
     fotoGrid.appendChild(div);
   }
 
+  // Fungsi untuk mengubah URL thumbnail (lh3) menjadi Link Google Drive asli
+  function getDriveUrl(imgUrl) {
+    if (!imgUrl) return '#';
+    // Format: https://lh3.googleusercontent.com/d/FILE_ID=s600
+    const parts = imgUrl.split('/d/');
+    if (parts[1]) {
+      const fileId = parts[1].split('=')[0];
+      return `https://drive.google.com/file/d/${fileId}/view?usp=sharing`;
+    }
+    return '#';
+  }
+
   function openNewForm() {
     document.getElementById('materialForm').reset();
     document.getElementById('rowNum').value = "";
     document.querySelectorAll('.thumb').forEach(el => el.style.display = 'none');
     document.getElementById('formTitle').innerText = "Form Laporan Baru";
     document.getElementById('submitBtn').innerHTML = '<i class="fas fa-paper-plane"></i> Simpan Laporan';
-    
     const form = document.getElementById('formSection');
     form.style.display = form.style.display === 'none' ? 'block' : 'none';
   }
@@ -165,9 +192,16 @@
     }
   }
 
-  function openModal(src) {
+  function openModal(src, driveUrl) {
     document.getElementById('modalImg').src = src;
+    document.getElementById('modalDriveLink').href = driveUrl;
     document.getElementById('imgModal').classList.add('active');
+  }
+
+  function closeModal(event) {
+    if(event.target === document.getElementById('imgModal')) {
+       document.getElementById('imgModal').classList.remove('active');
+    }
   }
 
   function compressImage(file) {
@@ -181,12 +215,8 @@
           const MAX_WIDTH = 800;
           let width = img.width;
           let height = img.height;
-          if (width > MAX_WIDTH) {
-            height = Math.round((height *= MAX_WIDTH / width));
-            width = MAX_WIDTH;
-          }
-          canvas.width = width;
-          canvas.height = height;
+          if (width > MAX_WIDTH) { height = Math.round((height *= MAX_WIDTH / width)); width = MAX_WIDTH; }
+          canvas.width = width; canvas.height = height;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
           const dataUrl = canvas.toDataURL('image/jpeg', 0.5); 
@@ -198,11 +228,9 @@
     });
   }
 
-  // Fungsi Ketika Tombol Edit Ditekan
   function editRow(index) {
     const row = globalData[index];
     if(!row) return;
-
     document.getElementById('formSection').style.display = 'block';
     document.getElementById('formTitle').innerText = "Edit Laporan";
     document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Update Laporan';
@@ -211,7 +239,6 @@
     document.getElementById('namaTeam').value = row.namaTeam;
     document.getElementById('pic').value = row.pic;
     
-    // Format tanggal untuk input date (yyyy-MM-dd)
     if(row.tanggal) {
       let parts = row.tanggal.split('/');
       document.getElementById('tanggal').value = parts[2] + '-' + parts[1] + '-' + parts[0];
@@ -221,32 +248,19 @@
     document.getElementById('banyakNya').value = row.banyakNya;
     document.getElementById('peruntukan').value = row.peruntukan;
 
-    // Tampilkan Foto Pengambilan Lama
     const prevAmbil = document.getElementById('prevPengambilan');
-    if(row.fotoPengambilan) {
-      prevAmbil.src = row.fotoPengambilan;
-      prevAmbil.style.display = 'block';
-    } else {
-      prevAmbil.style.display = 'none';
-    }
+    if(row.fotoPengambilan) { prevAmbil.src = row.fotoPengambilan; prevAmbil.style.display = 'block'; } 
+    else { prevAmbil.style.display = 'none'; }
 
-    // Tampilkan 21 Foto Pemakaian Lama
     for(let i=1; i<=21; i++){
       const prevPakai = document.getElementById(`prevPakai${i}`);
       const url = row.fotoPemakaian ? row.fotoPemakaian[i-1] : null;
-      if(url) {
-        prevPakai.src = url;
-        prevPakai.style.display = 'block';
-      } else {
-        prevPakai.style.display = 'none';
-      }
+      if(url) { prevPakai.src = url; prevPakai.style.display = 'block'; } 
+      else { prevPakai.style.display = 'none'; }
     }
 
-    // Reset semua input file (wajib kosong agar tidak ikut terupload ulang)
     document.getElementById('fotoPengambilan').value = '';
     for(let i=1; i<=21; i++) document.getElementById(`fotoPakai${i}`).value = '';
-
-    // Scroll ke atas ke form
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -255,10 +269,9 @@
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
-
     try {
       const payload = {
-        rowNum: document.getElementById('rowNum').value, // Kosong = Baru, Isi = Update
+        rowNum: document.getElementById('rowNum').value,
         namaTeam: document.getElementById('namaTeam').value,
         pic: document.getElementById('pic').value,
         tanggal: document.getElementById('tanggal').value,
@@ -266,10 +279,8 @@
         banyakNya: document.getElementById('banyakNya').value,
         peruntukan: document.getElementById('peruntukan').value
       };
-
       const filePengambilan = document.getElementById('fotoPengambilan').files[0];
       payload.fotoPengambilanBase64 = await compressImage(filePengambilan);
-
       for(let i=1; i<=21; i++){
         const fileInput = document.getElementById(`fotoPakai${i}`).files[0];
         payload[`fotoPemakaianBase64_${i}`] = await compressImage(fileInput);
@@ -288,27 +299,19 @@
         document.querySelectorAll('.thumb').forEach(el => el.style.display = 'none');
         document.getElementById('formSection').style.display = 'none';
         loadData();
-      } else {
-        throw new Error(result.message || 'Gagal menyimpan ke server');
-      }
-    } catch (error) {
-      alert('Error: ' + error.message);
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-save"></i> Simpan';
-    }
+      } else { throw new Error(result.message || 'Gagal menyimpan ke server'); }
+    } catch (error) { alert('Error: ' + error.message); } 
+    finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Simpan'; }
   }
 
   async function loadData() {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;color:var(--muted)"><i class="fas fa-spinner fa-spin"></i> Memuat data...</td></tr>';
-    
     try {
       const response = await fetch(SCRIPT_URL + '?action=load');
       if (!response.ok) throw new Error('Gagal mengambil data');
-      
       const data = await response.json();
-      globalData = data; // Simpan ke global
+      globalData = data;
       
       if(data.length === 0) {
         tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;color:var(--muted)">Belum ada data laporan</td></tr>';
@@ -321,10 +324,14 @@
         
         let fotoAmbilHtml = '-';
         if(row.fotoPengambilan) {
-          fotoAmbilHtml = `<img src="${row.fotoPengambilan}" class="thumb" onclick="openModal(this.src)">`;
+          const driveUrl = getDriveUrl(row.fotoPengambilan);
+          fotoAmbilHtml = `
+            <div class="foto-cell">
+              <img src="${row.fotoPengambilan}" class="thumb" onclick="openModal(this.src, '${driveUrl}')">
+              <a href="${driveUrl}" target="_blank" class="drive-link"><i class="fas fa-link"></i> Drive</a>
+            </div>`;
         }
 
-        // Tambah Tombol Edit
         let actionHtml = `<button class="btn btn-sm btn-blue" onclick="editRow(${index})"><i class="fas fa-edit"></i> Edit</button>`;
 
         tr.innerHTML = `
@@ -341,17 +348,23 @@
         for(let i=0; i<5; i++) {
           const url = row.fotoPemakaian ? row.fotoPemakaian[i] : null;
           if(url) {
-            tr.innerHTML += `<td><img src="${url}" class="thumb" onclick="openModal(this.src)"></td>`;
+            const driveUrl = getDriveUrl(url);
+            tr.innerHTML += `
+              <td>
+                <div class="foto-cell">
+                  <img src="${url}" class="thumb" onclick="openModal(this.src, '${driveUrl}')">
+                  <a href="${driveUrl}" target="_blank" class="drive-link"><i class="fas fa-link"></i> Drive</a>
+                </div>
+              </td>`;
           } else {
             tr.innerHTML += `<td>-</td>`;
           }
         }
-        
         tbody.appendChild(tr);
       });
     } catch (error) {
       console.error('Load Error:', error);
-      tbody.innerHTML = `<tr><td colspan="14" style="text-align:center;color:var(--red)"><b>Gagal Memuat Data</b><br><small style="color:var(--muted)">Pastikan URL Script sudah benar.</small></td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="14" style="text-align:center;color:var(--red)"><b>Gagal Memuat Data</b></td></tr>`;
     }
   }
 
