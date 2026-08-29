@@ -1,429 +1,231 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dashboard Pemakaian Material</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<style>
-  :root{--bg:#08090e;--card:#131620;--border:rgba(255,255,255,.06);--fg:#e4e6ea;--muted:#5c6370;--accent:#e8930c;--green:#2dd4a0;--red:#f06070;--blue:#3b82f6}
-  *{box-sizing:border-box;margin:0;padding:0}body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--fg);line-height:1.5}
-  .wrap{max-width:1400px;margin:0 auto;padding:20px}
-  h1{font-size:24px;font-weight:800;margin-bottom:20px;display:flex;align-items:center;gap:10px}
-  .cd{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
-  .btn{padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;border:none;font-family:inherit;background:var(--accent);color:#000;transition:.2s; font-size:12px}
-  .btn:hover{opacity:.85}
-  .btn-sm{padding:5px 10px; font-size:11px; border-radius:6px}
-  .btn-blue{background:var(--blue); color:#fff}
-  .tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border)}
-  table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}
-  th{background:rgba(255,255,255,.03);padding:12px;text-align:left;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)}
-  td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.03)}
-  img.thumb{width:60px;height:40px;object-fit:cover;border-radius:4px;cursor:pointer;border:1px solid var(--border);transition:.2s}
-  img.thumb:hover{transform:scale(1.5);z-index:10;position:relative;box-shadow:0 4px 15px rgba(0,0,0,.5)}
-  .form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:15px}
-  .fg{margin-bottom:15px}
-  label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:5px}
-  input, select{width:100%;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);color:var(--fg);font-family:inherit;font-size:13px}
-  input:focus, select:focus{outline:none;border-color:var(--accent)}
-  input[type="file"]{padding:7px}
-  select option{background:#191d2b;color:var(--fg)}
-  .foto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px}
-  .info-edit{font-size:10px; color:var(--green); margin-top:2px;}
-  .upload-status{display:none; color:var(--green); font-size:10px; margin-top:4px; font-weight:600; align-items:center; gap:4px}
-  .upload-status.active{display:flex}
-  .existing-gallery-wrap{background:rgba(255,255,255,.02); border:1px dashed var(--border); border-radius:8px; padding:12px; margin-bottom:15px; display:none;}
-  .existing-gallery-wrap.active{display:block}
-  .gallery-thumb{width:50px; height:50px; object-fit:cover; border-radius:6px; cursor:pointer; border:2px solid var(--border); transition:.2s}
-  .gallery-thumb:hover{transform:scale(1.1); border-color:var(--green); box-shadow:0 2px 10px rgba(0,0,0,.5)}
-  .foto-cell{display:flex;flex-direction:column;align-items:center;gap:4px}
-  .drive-link{color:var(--blue);font-size:10px;text-decoration:none;display:flex;align-items:center;gap:3px}
-  .drive-link:hover{color:#60a5fa; text-decoration:underline}
-  .fallback-img{width:60px; height:40px; display:none; align-items:center; justify-content:center; border:1px solid var(--border); border-radius:4px; background:rgba(255,255,255,.03); color:var(--muted); font-size:12px;}
-  .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;flex-direction:column}
-  .modal.active{display:flex}
-  .modal img{max-width:90%;max-height:80%;border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,.5)}
-  .modal-actions{margin-top:15px; display:flex; gap:10px}
-  .btn-modal{padding:8px 16px; border-radius:6px; text-decoration:none; font-size:12px; font-weight:700; border:none; cursor:pointer; font-family:inherit}
-  .btn-drive{background:var(--blue); color:#fff}
-  .btn-close{background:var(--red); color:#fff}
-  .empty-cell{color:var(--muted); font-size:10px; font-style:italic}
-</style>
-</head>
+  <base href="https://www.ari-armaturen.com/id/">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARI-ID – Product Information</title>
+  
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+  <meta name="description" content="ARI-Armaturen QR Product Informasi">
+  <meta name="keywords" content="ari, id, ari-id, ari-armaturen, Handabsperrventile, ARI-FABA Plus, ARI-FABA Plus ANSI, ARI-FABA Supra I, ARI-FABA Supra C">
+  <meta name="robots" content="index,follow">
+  <meta name="author" content="ARI-Armaturen Albert Richter GmbH & Co. KG">
+  <meta name="revisit-after" content="7 days">
+  <meta name="audience" content="alle">
+  <meta name="page-topic" content="Armaturen">
+  <meta http-equiv="cache-control" content="no-cache">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta name="geo.region" content="DE-NW">
+  <meta name="geo.placename" content="Schloss Holte-Stukenbrock">
+  <meta name="geo.position" content="51.89955;8.62461">
+  <meta name="ICBM" content="51.89955, 8.624614">
+
+  <link rel="stylesheet" href="/fileadmin/template/js/fancybox/jquery.fancybox.css" type="text/css" media="screen">
+  <link rel="stylesheet" type="text/css" href="qrcode.css" media="all">
+  <link rel="stylesheet" type="text/css" href="style.css" media="screen">
+  <link rel="stylesheet" type="text/css" href="responsive.css?1787992518" media="screen">
+
+  <script src="https://consent.cookiefirst.com/sites/ari-armaturen.com-8c785fc0-003b-466b-a6aa-2514780bdcfa/consent.js"></script>
+
+  <script type="text/plain" data-cookiefirst-script="google_tag_manager">
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-P6WQQQL');
+  </script>
+  </head>
 <body>
+  <noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P6WQQQL" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+  </noscript>
+  <div id="pagewrap" class="test">
+    <div id="header">
+      <a class="language" href="https://www.ari-armaturen.com/id/?804534696&language=en">English</a>
+      <a class="language" href="https://www.ari-armaturen.com/id/?804534696&language=de">German</a>
+      <a class="ari" href="https://www.ari-armaturen.com/contact/" target="_blank" rel="noopener">Contact form</a>
+      <a class="language link_website" href="https://www.ari-armaturen.com" target="_blank" rel="noopener">ARI-Armaturen Website</a>
+    </div>
 
-<div class="wrap">
-  <h1><i class="fas fa-boxes-stacked" style="color:var(--accent)"></i> Pemakaian Material Relokasi</h1>
-  <div style="display:flex;gap:10px;margin-bottom:20px">
-    <button class="btn" onclick="openNewForm()"><i class="fas fa-plus"></i> Tambah Laporan</button>
-  </div>
+    <div id="visual">
+      <br>
+      <a class="logo" href="https://www.ari-armaturen.com">
+        <img src="images/ARI_Rect_Logo_1_Line_Small_RGB_White_BG_Dark_Grey.svg" alt="ARI Armaturen" style="height: 50px;">
+      </a>
+      <div id="beta"></div>
+      <br>
+    </div>
 
-  <div id="formSection" class="cd" style="display:none">
-    <h2 id="formTitle" style="font-size:18px;font-weight:700;margin-bottom:15px">Form Laporan Material</h2>
-    <form id="materialForm" onsubmit="submitData(event)">
-      <input type="hidden" id="rowNum">
-      <div class="form-grid">
-        <div class="fg">
-          <label>Nama Team</label>
-          <select id="namaTeam" required>
-            <option value="">-- Pilih Team --</option>
-            <option value="APCSD">APCSD</option>
-            <option value="FTTX">FTTX</option>
-            <option value="COREMAN">COREMAN</option>
-            <option value="PROJECT">PROJECT</option>
-          </select>
+    <div id="content">
+      <h2>ARI-ID – Product Information</h2>
+      <br>
+      <p class="txt">
+        Thank you for accessing this page about the ARI-ID on your product*. Here, we provide you comprehensive information regarding your product. You can find here among others the description of your product, corresponding spare parts suggestions, related documentation and manuals as well as, where applicable, ordered certificates.
+      </p>
+      <br>
+
+      <div class="divTable steelBlueCols">
+        <div class="divTableHeading">
+          <div class="divTableRow">
+            <div style="width: 30%" class="divTableHead" id="artikel">Article:</div>
+            <div style="width: 70%" class="divTableHead" id="artikel-id">340160250193</div>
+          </div>
         </div>
-        <div class="fg"><label>PIC</label><input type="text" id="pic" required></div>
-        <div class="fg"><label>Tanggal</label><input type="date" id="tanggal" required></div>
-        <div class="fg">
-          <label>Jenis Barang</label>
-          <select id="jenisBarang" required>
-            <option value="">-- Pilih Jenis Barang --</option>
-            <option value="JC 96">JC 96</option>
-            <option value="OTB UPC 96">OTB UPC 96</option>
-            <option value="OTB APC 96">OTB APC 96</option>
-            <option value="OTB 24">OTB 24</option>
-            <option value="PATCHSCORE SC-LC">PATCHSCORE SC-LC</option>
-            <option value="PATCHSCORE FC-LC">PATCHSCORE FC-LC</option>
-            <option value="BAREL UPC">BAREL UPC</option>
-            <option value="BAREL">BAREL</option>
-            <option value="APC">APC</option>
-            <option value="SFP 1G">SFP 1G</option>
-            <option value="SFP 10G">SFP 10G</option>
-            <option value="SFP 100G">SFP 100G</option>
-            <option value="BIDI 10G">BIDI 10G</option>
-            <option value="BIDI 100G">BIDI 100G</option>
-            <option value="BIDI 1G">BIDI 1G</option>
-          </select>
+        <div class="divTableBody">
+          <div class="divTableRow">
+            <div style="width: 30%" class="divTableCellMono" id="seriennummer">Serial number:</div>
+            <div style="width: 70%" class="divTableCellMono" id="seriennummer-id">804534696</div>
+          </div>
+          <div class="divTableRow">
+            <div style="width: 30%" class="divTableCellMono">Production date:</div>
+            <div style="width: 70%" class="divTableCellMono">2020/03</div>
+          </div>
+          <div class="divTableRow">
+            <div style="width: 30%" class="divTableCellMono">General datasheet:</div>
+            <div style="width: 70%" class="divTableCellMono">
+              <a href="https://www.ari-armaturen.com/_appl/files_tb/files/010004-2.pdf" target="_blank" rel="noopener">010004-2.pdf</a>
+            </div>
+          </div>
+          <div class="divTableRow">
+            <div style="width: 30%" class="divTableCellMono">Operating instruction:</div>
+            <div style="width: 70%" class="divTableCellMono">
+              <a href="https://www.ari-armaturen.com/_appl/files_tb/files/0040203000-2.pdf" target="_blank" rel="noopener">0040203000-2.pdf</a>
+            </div>
+          </div>
+          <div class="divTableRow">
+            <div style="width: 30%" class="divTableCellMono">recommended Spare parts:</div>
+            <div style="width: 70%" class="divTableCellMono">
+              <a href="https://www.ari-armaturen.com/id/?804534696&language=en#d1">Listing</a>
+            </div>
+          </div>
         </div>
-        <div class="fg"><label>Banyak nya</label><input type="number" id="banyakNya" required></div>
-        <div class="fg"><label>Peruntukan</label><input type="text" id="peruntukan" required></div>
       </div>
+      <br>
+
+      <h3>Description</h3>
+      <div class="divTable steelBlueCols">
+        <div class="divTableBody">
+          <div class="divTableRow"><div style="width: 30%" class="divTableCellMono">Designation</div><div style="width: 70%" class="divTableCellMono">ARI-ZETRIX</div></div>
+          <div class="divTableRow"><div style="width: 30%" class="divTableCellMono">Description</div><div style="width: 70%" class="divTableCellMono">Double flanged process valve with metallic sealing and worm gear - triple offset</div></div>
+          <div class="divTableRow"><div style="width: 30%" class="divTableCellMono">Material</div><div style="width: 70%" class="divTableCellMono">1.0619+N</div></div>
+          <div class="divTableRow"><div style="width: 30%" class="divTableCellMono">Nominal diameter</div><div style="width: 70%" class="divTableCellMono">DN250</div></div>
+          <div class="divTableRow"><div style="width: 30%" class="divTableCellMono">Nominal pressure</div><div style="width: 70%" class="divTableCellMono">PN 25</div></div>
+          <div class="divTableRow"><div style="width: 30%" class="divTableCellMono">Connection</div><div style="width: 70%" class="divTableCellMono">flange</div></div>
+          <div class="divTableRow"><div style="width: 30%" class="divTableCellMono">Form</div><div style="width: 70%" class="divTableCellMono">Straight through</div></div>
+          <div class="divTableRow"><div style="width: 30%" class="divTableCellMono">Disc material</div><div style="width: 70%" class="divTableCellMono">1.0619+N EN 10213-2</div></div>
+          <div class="divTableRow"><div style="width: 30%" class="divTableCellMono">Shaft material</div><div style="width: 70%" class="divTableCellMono">1.4021+QT EN 10088-1</div></div>
+          <div class="divTableRow"><div style="width: 30%" class="divTableCellMono">Seat material</div><div style="width: 70%" class="divTableCellMono">Graphit/1.4462=&gt;SA240Gr.S31803</div></div>
+          <div class="divTableRow"><div style="width: 30%" class="divTableCellMono">Seal ring</div><div style="width: 70%" class="divTableCellMono">Lamellar seal ring</div></div>
+          <div class="divTableRow"><div style="width: 30%" class="divTableCellMono">Shaft retaining</div><div style="width: 70%" class="divTableCellMono">Blow-out protected stem</div></div>
+          <div class="divTableRow"><div style="width: 30%" class="divTableCellMono">Panel</div><div style="width: 70%" class="divTableCellMono">F12W36</div></div>
+          <div class="divTableRow"><div style="width: 30%" class="divTableCellMono">Shaft connection</div><div style="width: 70%" class="divTableCellMono">2 feather keys</div></div>
+          <div class="divTableRow"><div style="width: 30%" class="divTableCellMono">Weight Valve[kG]</div><div style="width: 70%" class="divTableCellMono">123</div></div>
+        </div>
+      </div>
+
+      <div id="d1"></div>
+      <br>
       
-      <div style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px">
-        <label style="font-size:14px; color:var(--accent)"><i class="fas fa-camera"></i> Foto Pengambilan</label>
-        <div id="existingAmbilWrap" class="existing-gallery-wrap">
-          <label style="font-size:10px; margin-bottom:8px; display:block; color:var(--green)"><i class="fas fa-check-circle"></i> Foto lama sudah ada (Klik untuk lihat):</label>
-          <div id="existingAmbilGallery" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+      <h3>Recommended spareparts</h3>
+      <span style="display:none;" id="output"></span>
+      <p class="txt">Select the necessary spare parts and send us your enquiry via the request form.</p>
+      <br>
+
+      <div class="divTable steelBlueCols">
+        <div class="divTableHeading">
+          <div class="divTableRow">
+            <div class="divTableHead">Item Number:</div>
+            <div class="divTableHead">Description:</div>
+            <div class="divTableHead">Material</div>
+            <div class="divTableHead">Norm</div>
+            <div class="divTableHead">QT</div>
+          </div>
         </div>
-        <input type="file" id="fotoPengambilan" accept="image/*" onchange="previewImg(this, 'prevPengambilan', 'statusPengambilan')">
-        <img id="prevPengambilan" class="thumb" referrerpolicy="no-referrer" style="margin-top:5px; display:none">
-        <div id="statusPengambilan" class="upload-status"><i class="fas fa-check-circle"></i> Sudah upload (Tidak perlu upload ulang)</div>
-      </div>
-
-      <div style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px">
-        <label style="font-size:14px; color:var(--green)"><i class="fas fa-images"></i> Foto Pemakaian Barang (1-21)</label>
-        <div id="existingPakaiWrap" class="existing-gallery-wrap">
-          <label style="font-size:10px; margin-bottom:8px; display:block; color:var(--green)"><i class="fas fa-check-circle"></i> Foto lama sudah ada (Klik thumbnail untuk lihat):</label>
-          <div id="existingPakaiGallery" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+        <div class="divTableBody">
+          <div class="divTableRow">
+            <div class="divTableCell"><input type="checkbox" value="0385030660 Spiral gasket SP11, 1.0 pcs." name="0385030660" id="0385030660"> <label for="0385030660">0385030660</label></div>
+            <div class="divTableCellMono">Spiral gasket SP11</div>
+            <div class="divTableCellMono">Graphit/1.4541</div>
+            <div class="divTableCellMono"></div>
+            <div class="divTableCellMono">1.0 pcs.</div>
+          </div>
+          <div class="divTableRow">
+            <div class="divTableCell"><input type="checkbox" value="0385032090 Spiral gasket SP17, 1.0 pcs." name="0385032090" id="0385032090"> <label for="0385032090">0385032090</label></div>
+            <div class="divTableCellMono">Spiral gasket SP17</div>
+            <div class="divTableCellMono">Graphit/Hastelloy C276</div>
+            <div class="divTableCellMono"></div>
+            <div class="divTableCellMono">1.0 pcs.</div>
+          </div>
+          <div class="divTableRow">
+            <div class="divTableCell"><input type="checkbox" value="9370010364 Gear Rotork, 1.0 pcs." name="9370010364" id="9370010364"> <label for="9370010364">9370010364</label></div>
+            <div class="divTableCellMono">Gear Rotork</div>
+            <div class="divTableCellMono"></div>
+            <div class="divTableCellMono">AB550+SG400</div>
+            <div class="divTableCellMono">1.0 pcs.</div>
+          </div>
+          <div class="divTableRow">
+            <div class="divTableCell"><input type="checkbox" value="0389070015 Laminated seal ZETRIX, 1.0 pcs." name="0389070015" id="0389070015"> <label for="0389070015">0389070015</label></div>
+            <div class="divTableCellMono">Laminated seal ZETRIX</div>
+            <div class="divTableCellMono">Graphit/1.4462=&gt;SA240Gr.S31803</div>
+            <div class="divTableCellMono"></div>
+            <div class="divTableCellMono">1.0 pcs.</div>
+          </div>
+          <div class="divTableRow">
+            <div class="divTableCell"><input type="checkbox" value="0201810100 Hexagon nut TL0090000016-2, 2.0 pcs." name="0201810100" id="0201810100"> <label for="0201810100">0201810100</label></div>
+            <div class="divTableCellMono">Hexagon nut TL0090000016-2</div>
+            <div class="divTableCellMono">A4-70</div>
+            <div class="divTableCellMono">ISO 4032</div>
+            <div class="divTableCellMono">2.0 pcs.</div>
+          </div>
+          <div class="divTableRow">
+            <div class="divTableCell"><input type="checkbox" value="0490000420 Packing unit ZETRIX, 1.0 pcs." name="0490000420" id="0490000420"> <label for="0490000420">0490000420</label></div>
+            <div class="divTableCellMono">Packing unit ZETRIX</div>
+            <div class="divTableCellMono">GRAPHIT</div>
+            <div class="divTableCellMono"></div>
+            <div class="divTableCellMono">1.0 pcs.</div>
+          </div>
         </div>
-        <div class="info-edit">* Kosongkan jika tidak ingin mengubah foto lama</div>
-        <div class="foto-grid" id="pemakaianFotoGrid"></div>
       </div>
+      <br>
 
-      <button type="submit" class="btn" style="margin-top:20px; width:100%; padding:12px; font-size:14px" id="submitBtn">
-        <i class="fas fa-paper-plane"></i> Simpan Laporan
-      </button>
-    </form>
-  </div>
+      <a class="button web big bestellformular" id="bestellformular" href="https://ari-armaturen.com/index.php?id=865&amp;L=0&amp;ersatz=">Request form</a>
+      
+      <h4>
+        <a class="link" href="mailto:info.sales@ari-armaturen.com?subject=ARI-ID%20-%20Product-Information%20Feedback">Feedback</a>
+      </h4>
+      <br>
 
-  <div class="cd">
-    <div class="tbl-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Aksi</th>
-            <th>Tanggal</th><th>Team</th><th>PIC</th><th>Barang</th><th>Jml</th><th>Peruntukan</th><th>F. Ambil</th>
-            <th>F. Pakai 1</th><th>F. Pakai 2</th><th>F. Pakai 3</th><th>F. Pakai 4</th><th>F. Pakai 5</th><th>...</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody">
-          <tr><td colspan="14" style="text-align:center;color:var(--muted)"><i class="fas fa-spinner fa-spin"></i> Memuat data...</td></tr>
-        </tbody>
-      </table>
+      <p class="txt">
+        *This product information platform is a free service of ARI-Armaturen Albert Richter GmbH &amp; Co. KG. All attached data and documents relate to the condition on the production date ex works. It is possible that individual post-production changes to the products deviating from the serial condition will therefore not be presented in the documents, even if these changes were made by an ARI unit. The data shown are generated from an automatic link and must be checked for plausibility and completeness before use. On request ARI-Armaturen will confirm the accuracy of the shown data and documents.
+      </p>
+      <br><br>
+    </div>
+
+    <div id="footer">
+      <img id="madein" src="images/made-in-germany.png" alt="Made in Germany">
+      <strong>ARI-Armaturen Albert Richter GmbH &amp; Co. KG</strong><br>
+      Mergelheide 56-60 | D-33758 Schloß Holte-Stukenbrock<br>
+      Fon: +49 5207 994-0 | E-Mail: <a href="mailto:info.sales@ari-armaturen.com">info.sales@ari-armaturen.com</a> | 
+      <a href="https://www.ari-armaturen.com/en/imprint/">Imprint</a>
     </div>
   </div>
-</div>
 
-<div class="modal" id="imgModal" onclick="closeModal(event)">
-  <img src="" id="modalImg" referrerpolicy="no-referrer" onclick="event.stopPropagation()">
-  <div class="modal-actions" onclick="event.stopPropagation()">
-    <a href="#" id="modalDriveLink" target="_blank" class="btn-modal btn-drive"><i class="fas fa-external-link-alt"></i> Buka di Drive</a>
-    <button onclick="document.getElementById('imgModal').classList.remove('active')" class="btn-modal btn-close"><i class="fas fa-times"></i> Tutup</button>
-  </div>
-</div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="/fileadmin/template/js/fancybox/jquery.fancybox.pack.js"></script>
+  <script>
+    $(document).ready(function () {
+      var accordion_head = $('.accordion > li > a'),
+          accordion_body = $('.accordion li > .sub-menu');
 
-<script>
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxXf2wS0OjaGwrDbKzdKcLGfx9yoVn0KHxiGipvM8V__QdUr0haR4twVHgpC8VJ_24N/exec';
-  let globalData = [];
-  
-  const fotoGrid = document.getElementById('pemakaianFotoGrid');
-  for(let i=1; i<=21; i++){
-    const div = document.createElement('div');
-    div.className = 'foto-item';
-    div.innerHTML = `
-      <label style="font-size:9px">Foto ${i}</label>
-      <input type="file" id="fotoPakai${i}" accept="image/*" onchange="previewImg(this, 'prevPakai${i}', 'statusPakai${i}')">
-      <img id="prevPakai${i}" class="thumb" referrerpolicy="no-referrer" style="display:none; width:100%; height:80px; margin-top:5px">
-      <div id="statusPakai${i}" class="upload-status"><i class="fas fa-check-circle"></i> Sudah upload</div>
-    `;
-    fotoGrid.appendChild(div);
-  }
-
-  function getFileId(url) {
-    if (!url || typeof url !== 'string') return null;
-    let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-    if (match) return match[1];
-    match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-    if (match) return match[1];
-    return null;
-  }
-
-  function openNewForm() {
-    document.getElementById('materialForm').reset();
-    document.getElementById('rowNum').value = "";
-    document.querySelectorAll('.thumb').forEach(el => el.style.display = 'none');
-    document.querySelectorAll('.upload-status').forEach(el => el.classList.remove('active'));
-    document.getElementById('existingAmbilWrap').classList.remove('active');
-    document.getElementById('existingPakaiWrap').classList.remove('active');
-    document.getElementById('formTitle').innerText = "Form Laporan Baru";
-    document.getElementById('submitBtn').innerHTML = '<i class="fas fa-paper-plane"></i> Simpan Laporan';
-    const form = document.getElementById('formSection');
-    form.style.display = form.style.display === 'none' ? 'block' : 'none';
-  }
-
-  function previewImg(input, previewId, statusId) {
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const prev = document.getElementById(previewId);
-        prev.src = e.target.result;
-        prev.style.display = 'block';
-        if(statusId) document.getElementById(statusId).classList.remove('active');
-      }
-      reader.readAsDataURL(input.files[0]);
-    }
-  }
-
-  function openModal(src, driveUrl) {
-    document.getElementById('modalImg').src = src;
-    document.getElementById('modalDriveLink').href = driveUrl;
-    document.getElementById('imgModal').classList.add('active');
-  }
-
-  function closeModal(event) {
-    if(event.target === document.getElementById('imgModal')) {
-       document.getElementById('imgModal').classList.remove('active');
-    }
-  }
-
-  function compressImage(file) {
-    return new Promise((resolve) => {
-      if (!file) { resolve(""); return; }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 800;
-          let width = img.width;
-          let height = img.height;
-          if (width > MAX_WIDTH) { height = Math.round((height *= MAX_WIDTH / width)); width = MAX_WIDTH; }
-          canvas.width = width; canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.5); 
-          resolve(dataUrl.split(',')[1]);
-        };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
-  function editRow(index) {
-    const row = globalData[index];
-    if(!row) return;
-    document.getElementById('formSection').style.display = 'block';
-    document.getElementById('formTitle').innerText = "Edit Laporan";
-    document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Update Laporan';
-    
-    document.getElementById('rowNum').value = row.rowNum;
-    document.getElementById('namaTeam').value = row.namaTeam;
-    document.getElementById('pic').value = row.pic;
-    
-    if(row.tanggal) {
-      let parts = row.tanggal.split('/');
-      document.getElementById('tanggal').value = parts[2] + '-' + parts[1] + '-' + parts[0];
-    }
-
-    document.getElementById('jenisBarang').value = row.jenisBarang;
-    document.getElementById('banyakNya').value = row.banyakNya;
-    document.getElementById('peruntukan').value = row.peruntukan;
-
-    const ambilWrap = document.getElementById('existingAmbilWrap');
-    const ambilGallery = document.getElementById('existingAmbilGallery');
-    ambilGallery.innerHTML = ''; 
-    document.getElementById('prevPengambilan').style.display = 'none'; 
-    
-    const fileIdAmbil = getFileId(row.fotoPengambilan);
-    if(fileIdAmbil) { 
-      ambilWrap.classList.add('active');
-      const imgSrc = `https://lh3.googleusercontent.com/d/${fileIdAmbil}=s800`;
-      const driveUrl = `https://drive.google.com/file/d/${fileIdAmbil}/view?usp=sharing`;
-      const img = document.createElement('img');
-      img.src = imgSrc;
-      img.className = 'gallery-thumb';
-      img.referrerpolicy = 'no-referrer';
-      img.onclick = () => openModal(imgSrc, driveUrl);
-      ambilGallery.appendChild(img);
-    } else { 
-      ambilWrap.classList.remove('active'); 
-    }
-
-    const pakaiWrap = document.getElementById('existingPakaiWrap');
-    const pakaiGallery = document.getElementById('existingPakaiGallery');
-    pakaiGallery.innerHTML = ''; 
-    
-    let hasExistingPakai = false;
-    for(let i=1; i<=21; i++){
-      const url = row.fotoPemakaian ? row.fotoPemakaian[i-1] : null;
-      document.getElementById(`prevPakai${i}`).style.display = 'none';
-      document.getElementById(`statusPakai${i}`).classList.remove('active');
-
-      const fileIdPakai = getFileId(url);
-      if(fileIdPakai) { 
-        hasExistingPakai = true;
-        const imgSrc = `https://lh3.googleusercontent.com/d/${fileIdPakai}=s800`;
-        const driveUrl = `https://drive.google.com/file/d/${fileIdPakai}/view?usp=sharing`;
-        const img = document.createElement('img');
-        img.src = imgSrc;
-        img.className = 'gallery-thumb';
-        img.referrerpolicy = 'no-referrer';
-        img.onclick = () => openModal(imgSrc, driveUrl);
-        pakaiGallery.appendChild(img);
-      }
-    }
-    
-    if(hasExistingPakai) pakaiWrap.classList.add('active');
-    else pakaiWrap.classList.remove('active');
-
-    document.getElementById('fotoPengambilan').value = '';
-    for(let i=1; i<=21; i++) document.getElementById(`fotoPakai${i}`).value = '';
-    
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  async function submitData(e) {
-    e.preventDefault();
-    const btn = document.getElementById('submitBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
-    try {
-      const payload = {
-        rowNum: document.getElementById('rowNum').value,
-        namaTeam: document.getElementById('namaTeam').value,
-        pic: document.getElementById('pic').value,
-        tanggal: document.getElementById('tanggal').value,
-        jenisBarang: document.getElementById('jenisBarang').value,
-        banyakNya: document.getElementById('banyakNya').value,
-        peruntukan: document.getElementById('peruntukan').value
-      };
-      
-      const filePengambilan = document.getElementById('fotoPengambilan').files[0];
-      payload.fotoPengambilanBase64 = await compressImage(filePengambilan);
-
-      for(let i=1; i<=21; i++){
-        const fileInput = document.getElementById(`fotoPakai${i}`).files[0];
-        payload[`fotoPemakaianBase64_${i}`] = await compressImage(fileInput);
-      }
-
-      const response = await fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(payload)
-      });
-      const result = await response.json();
-
-      if(result.status === 'success') {
-        alert(payload.rowNum ? 'Laporan berhasil diupdate!' : 'Laporan berhasil disimpan!');
-        document.getElementById('materialForm').reset();
-        document.querySelectorAll('.thumb').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.upload-status').forEach(el => el.classList.remove('active'));
-        document.getElementById('existingAmbilWrap').classList.remove('active');
-        document.getElementById('existingPakaiWrap').classList.remove('active');
-        document.getElementById('formSection').style.display = 'none';
-        loadData();
-      } else { throw new Error(result.message || 'Gagal menyimpan ke server'); }
-    } catch (error) { alert('Error: ' + error.message); } 
-    finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Simpan'; }
-  }
-
-  function renderFotoCell(url) {
-    const fileId = getFileId(url);
-    if (fileId) {
-      const imgSrc = `https://lh3.googleusercontent.com/d/${fileId}=s800`;
-      const driveUrl = `https://drive.google.com/file/d/${fileId}/view?usp=sharing`;
-      return `
-        <td>
-          <div class="foto-cell">
-            <img src="${imgSrc}" class="thumb" referrerpolicy="no-referrer" 
-                 onclick="openModal(this.src, '${driveUrl}')" 
-                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-            <div class="fallback-img"><i class="fas fa-unlink"></i></div>
-            <a href="${driveUrl}" target="_blank" class="drive-link"><i class="fas fa-link"></i> Drive</a>
-          </div>
-        </td>`;
-    }
-    return '<td class="empty-cell">-</td>'; // Jika tidak ada link, tulis "Kosong"
-  }
-
-  async function loadData() {
-    const tbody = document.getElementById('tableBody');
-    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;color:var(--muted)"><i class="fas fa-spinner fa-spin"></i> Memuat data...</td></tr>';
-    try {
-      // PERBAIKAN CACHE: Tambahkan timestamp agar browser selalu mengambil data terbaru dari server
-      const response = await fetch(SCRIPT_URL + '?action=load&t=' + new Date().getTime());
-      if (!response.ok) throw new Error('Gagal mengambil data');
-      const data = await response.json();
-      globalData = data;
-      
-      if(data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;color:var(--muted)">Belum ada data laporan</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = '';
-      data.reverse().forEach((row, index) => {
-        const tr = document.createElement('tr');
-        let actionHtml = `<button class="btn btn-sm btn-blue" onclick="editRow(${index})"><i class="fas fa-edit"></i> Edit</button>`;
-
-        tr.innerHTML = `
-          <td>${actionHtml}</td>
-          <td>${row.tanggal || '-'}</td>
-          <td><b>${row.namaTeam || '-'}</b></td>
-          <td>${row.pic || '-'}</td>
-          <td>${row.jenisBarang || '-'}</td>
-          <td>${row.banyakNya || '-'}</td>
-          <td>${row.peruntukan || '-'}</td>
-          ${renderFotoCell(row.fotoPengambilan)}
-        `;
-
-        for(let i=0; i<5; i++) {
-          const url = row.fotoPemakaian ? row.fotoPemakaian[i] : null;
-          tr.innerHTML += renderFotoCell(url);
+      accordion_head.first().addClass('active').next().slideDown('normal');
+      accordion_head.on('click', function (event) {
+        event.preventDefault();
+        if ($(this).attr('class') !== 'active') {
+          accordion_body.slideUp('normal');
+          $(this).next().stop(true, true).slideToggle('normal');
+          accordion_head.removeClass('active');
+          $(this).addClass('active');
         }
-        
-        tbody.appendChild(tr);
       });
-    } catch (error) {
-      console.error('Load Error:', error);
-      tbody.innerHTML = `<tr><td colspan="14" style="text-align:center;color:var(--red)"><b>Gagal Memuat Data</b></td></tr>`;
-    }
-  }
-
-  loadData();
-</script>
+    });
+  </script>
+  <script src="/id/ersatzteilBestellung.js"></script>
 </body>
 </html>
